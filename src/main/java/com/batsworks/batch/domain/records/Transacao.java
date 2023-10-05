@@ -18,27 +18,18 @@ public record Transacao(
         String nomeDaLoja
 ) {
     public Transacao withValor(BigDecimal valor) {
-        return new Transacao(
-                this.id(), this.tipo(), this.data(), valor, this.cpf(),
-                this.cartao(), this.hora(), this.donoDaLoja(), this.nomeDaLoja()
-        );
+        return new Transacao(id, tipo, data, valor, cpf, cartao, hora, donoDaLoja, nomeDaLoja);
     }
 
     public Transacao withData(String data) throws ParseException {
         var dateFormat = new SimpleDateFormat("yyyyMMdd");
         var date = dateFormat.parse(data);
-        return new Transacao(
-                this.id(), this.tipo(), new Date(date.getTime()), this.valor(), this.cpf(),
-                this.cartao(), this.hora(), this.donoDaLoja(), this.nomeDaLoja()
-        );
+        return new Transacao(id, tipo, new Date(date.getTime()), valor, cpf, cartao, hora, donoDaLoja, nomeDaLoja);
     }
 
     public Transacao withHora(String hora) throws ParseException {
         var dateFormat = new SimpleDateFormat("HHmmss");
         var hour = dateFormat.parse(hora);
-        return new Transacao(
-                this.id(), this.tipo(), this.data(), this.valor(), this.cpf(),
-                this.cartao(), new Time(hour.getTime()), this.donoDaLoja(), this.nomeDaLoja()
-        );
+        return new Transacao(id, tipo, data, valor, cpf, cartao, new Time(hour.getTime()), donoDaLoja, nomeDaLoja);
     }
 }
