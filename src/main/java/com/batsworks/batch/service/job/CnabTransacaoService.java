@@ -1,111 +1,112 @@
-package com.batsworks.batch.service.job;
-
-import com.batsworks.batch.domain.records.Transacao;
-import com.batsworks.batch.domain.records.TransacaoCNAB;
-import lombok.RequiredArgsConstructor;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.core.job.builder.JobBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
-import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.database.JdbcBatchItemWriter;
-import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.item.file.transform.Range;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
-import org.springframework.core.task.SimpleAsyncTaskExecutor;
-import org.springframework.transaction.PlatformTransactionManager;
-
-import javax.sql.DataSource;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-@Configuration
-@RequiredArgsConstructor
-public class CnabTransacaoService {
-
-    private final PlatformTransactionManager transactionManager;
-    private final JobRepository jobRepository;
-
-    @Bean
-    Job job(Step step, JobRepository jobRepository) {
-        return new JobBuilder("job", jobRepository)
-                .start(step)
-                .incrementer(new RunIdIncrementer())
-                .build();
-    }
-
-    @Bean
-    Step step(ItemReader<TransacaoCNAB> itemReader, ItemProcessor<TransacaoCNAB, Transacao> itemProcessor, ItemWriter<Transacao> itemWriter) {
-        return new StepBuilder("step", jobRepository)
-                .<TransacaoCNAB, Transacao>chunk(50, transactionManager)
-                .reader(itemReader)
-                .processor(itemProcessor)
-                .writer(itemWriter)
-                .build();
-    }
-
-    @Bean
-    @StepScope
-    FlatFileItemReader<TransacaoCNAB> reader(@Value("#{jobParameters['cnabFile']}") Resource resource) {
-        return new FlatFileItemReaderBuilder<TransacaoCNAB>()
-                .name("reader")
-                .resource(resource)
-                .fixedLength()
-                .columns(
-                        new Range(1, 1), new Range(2, 9),
-                        new Range(10, 19), new Range(20, 30),
-                        new Range(31, 42), new Range(43, 48),
-                        new Range(49, 62), new Range(63, 80)
-                ).names("tipo", "data", "valor", "cpf", "cartao",
-                        "hora", "donoDaLoja", "nomeDaLoja")
-                .targetType(TransacaoCNAB.class)
-                .build();
-    }
-
-    @Bean
-    ItemProcessor<TransacaoCNAB, Transacao> processor() {
-        return item -> new Transacao(
-                null,
-                item.tipo(),
-                null,
-                item.valor().divide(BigDecimal.valueOf(100), RoundingMode.DOWN),
-                item.cpf(), item.cartao(),
-                null,
-                item.donoDaLoja().trim(),
-                item.nomeDaLoja().trim()
-        ).withHora(item.hora()).withData(item.data());
-    }
-
-    @Bean
-    JdbcBatchItemWriter<Transacao> writer(DataSource dataSource) {
-        return new JdbcBatchItemWriterBuilder<Transacao>()
-                .dataSource(dataSource)
-                .sql("""
-                        INSERT INTO transacao (tipo, data, valor, cpf, cartao, hora, donoLoja, nomeLoja)
-                        VALUES
-                        (:tipo, :data, :valor, :cpf, :cartao, :hora, :donoDaLoja, :nomeDaLoja)
-                        """).beanMapped().build();
-    }
-
-    @Bean
-    JobLauncher asyncJobLauncher(JobRepository jobRepository) throws Exception {
-        var jobLauncher = new TaskExecutorJobLauncher();
-        jobLauncher.setJobRepository(jobRepository);
-        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
-        jobLauncher.afterPropertiesSet();
-        return jobLauncher;
-    }
-
-}
+//package com.batsworks.batch.service.job;
+//
+//import com.batsworks.batch.domain.records.Transacao;
+//import com.batsworks.batch.domain.records.TransacaoCNAB;
+//import lombok.RequiredArgsConstructor;
+//import org.springframework.batch.core.Job;
+//import org.springframework.batch.core.Step;
+//import org.springframework.batch.core.configuration.annotation.StepScope;
+//import org.springframework.batch.core.job.builder.JobBuilder;
+//import org.springframework.batch.core.launch.JobLauncher;
+//import org.springframework.batch.core.launch.support.RunIdIncrementer;
+//import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
+//import org.springframework.batch.core.repository.JobRepository;
+//import org.springframework.batch.core.step.builder.StepBuilder;
+//import org.springframework.batch.item.ItemProcessor;
+//import org.springframework.batch.item.ItemReader;
+//import org.springframework.batch.item.ItemWriter;
+//import org.springframework.batch.item.database.JdbcBatchItemWriter;
+//import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
+//import org.springframework.batch.item.file.FlatFileItemReader;
+//import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+//import org.springframework.batch.item.file.transform.Range;
+//import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.context.annotation.Bean;
+//import org.springframework.context.annotation.Configuration;
+//import org.springframework.core.io.Resource;
+//import org.springframework.core.task.SimpleAsyncTaskExecutor;
+//import org.springframework.transaction.PlatformTransactionManager;
+//
+//import javax.sql.DataSource;
+//import java.math.BigDecimal;
+//import java.math.RoundingMode;
+//
+//@Configuration
+//@RequiredArgsConstructor
+//public class CnabTransacaoService {
+//
+//    private final PlatformTransactionManager transactionManager;
+//    private final JobRepository jobRepository;
+//
+//    @Bean
+//    Job job(Step step, JobRepository jobRepository) {
+//        return new JobBuilder("job", jobRepository)
+//                .start(step)
+//                .incrementer(new RunIdIncrementer())
+//                .build();
+//    }
+//
+//    @Bean
+//    Step step(ItemReader<TransacaoCNAB> itemReader, ItemProcessor<TransacaoCNAB, Transacao> itemProcessor, ItemWriter<Transacao> itemWriter) {
+//        return new StepBuilder("step", jobRepository)
+//                .<TransacaoCNAB, Transacao>chunk(100, transactionManager)
+//                .reader(itemReader)
+//                .processor(itemProcessor)
+//                .writer(itemWriter)
+//                .build();
+//    }
+//
+//    @Bean
+//    @StepScope
+//    FlatFileItemReader<TransacaoCNAB> reader(@Value("#{jobParameters['cnabFile']}") Resource resource) {
+//        return new FlatFileItemReaderBuilder<TransacaoCNAB>()
+//                .name("reader")
+//                .resource(resource)
+//                .fixedLength()
+//                .columns(
+//                        new Range(1, 1), new Range(2, 9),
+//                        new Range(10, 19), new Range(20, 30),
+//                        new Range(31, 42), new Range(43, 48),
+//                        new Range(49, 62), new Range(63, 80)
+//                ).names("tipo", "data", "valor", "cpf", "cartao",
+//                        "hora", "donoDaLoja", "nomeDaLoja")
+//                .targetType(TransacaoCNAB.class)
+//                .build();
+//    }
+//
+//    @Bean
+//    ItemProcessor<TransacaoCNAB, Transacao> processor() {
+//        return item -> new Transacao(
+//                null,
+//                item.tipo(),
+//                null,
+//                item.valor().divide(BigDecimal.valueOf(100), RoundingMode.DOWN),
+//                item.cpf(), item.cartao(),
+//                null,
+//                item.donoDaLoja().trim(),
+//                item.nomeDaLoja().trim()
+//        ).withHora(item.hora()).withData(item.data());
+//    }
+//
+//    @Bean
+//    JdbcBatchItemWriter<Transacao> writer(DataSource dataSource) {
+//        return new JdbcBatchItemWriterBuilder<Transacao>()
+//                .dataSource(dataSource)
+//                .sql("""
+//                        INSERT INTO transacao (tipo, data, valor, cpf, cartao, hora, donoLoja, nomeLoja)
+//                        VALUES
+//                        (:tipo, :data, :valor, :cpf, :cartao, :hora, :donoDaLoja, :nomeDaLoja)
+//                        """)
+//                .beanMapped().build();
+//    }
+//
+//    @Bean
+//    JobLauncher asyncJobLauncher(JobRepository jobRepository) throws Exception {
+//        var jobLauncher = new TaskExecutorJobLauncher();
+//        jobLauncher.setJobRepository(jobRepository);
+//        jobLauncher.setTaskExecutor(new SimpleAsyncTaskExecutor());
+//        jobLauncher.afterPropertiesSet();
+//        return jobLauncher;
+//    }
+//
+//}

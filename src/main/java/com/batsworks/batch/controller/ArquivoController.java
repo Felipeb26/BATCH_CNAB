@@ -17,8 +17,8 @@ public class ArquivoController {
     private final CnabService service;
 
     @PostMapping("upload")
-    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) throws Exception {
-        service.uploadCnabFile(file);
+    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file, @RequestParam("type") String type) throws Exception {
+        service.uploadCnabFile(file, type);
         return ResponseEntity.ok().body("Processamento Iniciado");
     }
 

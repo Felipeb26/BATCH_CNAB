@@ -9,27 +9,32 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
-
-import static java.util.Objects.nonNull;
 
 @Service
 public class CnabService {
 
     private final Path pathStorage;
-    private final JobLauncher jobLauncher;
+    //    private final JobLauncher jobLauncher;
+    private final JobLauncher cnab400Launcher;
     private final Job job;
 
-    public CnabService(@Value("${file.upload-dir:tmp}") String uploadDir, @Qualifier("asyncJobLauncher") JobLauncher jobLauncher, Job job) {
+    public CnabService(@Value("${file.upload-dir:tmp}") String uploadDir,
+                       @Qualifier("jobLauncherAsync") JobLauncher cnab400Launcher,
+                       Job job) {
         this.pathStorage = Paths.get(uploadDir);
-        this.jobLauncher = jobLauncher;
+        this.cnab400Launcher = cnab400Launcher;
+//        this.jobLauncher = jobLauncher;
         this.job = job;
     }
 
-    public void uploadCnabFile(MultipartFile file) throws Exception {
-        var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomName());
+    public void uploadCnabFile(MultipartFile file, String tipo) throws Exception {
+        var fileName = StringUtils.cleanPath(file.getOriginalFilename() == null ? file.getOriginalFilename() : randomName());
         var location = pathStorage.resolve(fileName);
         file.transferTo(location);
 
@@ -38,10 +43,20 @@ public class CnabService {
                 .addJobParameter("cnabFile", "file:" + location, String.class)
                 .toJobParameters();
 
-        jobLauncher.run(job, jobParameters);
+        if (tipo.equalsIgnoreCase("400"))
+            cnab400Launcher.run(job, jobParameters);
+//        else
+//            jobLauncher.run(job, jobParameters);
+
+        removeTempFile(fileName);
     }
 
     private String randomName() {
-        return UUID.randomUUID().toString();
+        return UUID.randomUUID() + ".rem";
     }
+
+    private static void removeTempFile(String path) throws IOException {
+        Files.deleteIfExists(Paths.get(path));
+    }
+
 }
