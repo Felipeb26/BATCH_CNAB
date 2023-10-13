@@ -2,8 +2,10 @@ package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.cnab.CnabReader;
 import com.batsworks.batch.domain.enums.CnabType;
+import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.Cnab400;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.item.file.LineMapper;
@@ -27,7 +29,11 @@ public class CnabService {
     @Autowired
     private JobLauncher jobLauncherAsync;
     @Autowired
-    private Job job;
+    private JobLauncher asyncWrite;
+    @Autowired
+    private Job jobCnab;
+    @Autowired
+    private Job jobWriteCnab;
     @Autowired
     private CnabReader<Cnab400> cnabReader;
 
@@ -40,7 +46,7 @@ public class CnabService {
 
         cnabReaderConfig(file);
         if (tipo.equals(CnabType.CNAB400))
-            jobLauncherAsync.run(job, jobParameters);
+            jobLauncherAsync.run(jobCnab, jobParameters);
     }
 
     private void cnabReaderConfig(MultipartFile file) throws IOException {
@@ -85,4 +91,16 @@ public class CnabService {
         return lineMapper;
     }
 
+    public Object downloadCnab() {
+        try {
+            var jobParameters = new JobParametersBuilder()
+                    .addJobParameter("download_cnab", randomName(), String.class, false)
+                    .toJobParameters();
+            asyncWrite.run(jobWriteCnab, jobParameters);
+        } catch (Exception e) {
+            System.out.printf("log: {}\n", e.getMessage());
+            e.printStackTrace();
+        }
+        return Status.PROCESSANDO;
+    }
 }

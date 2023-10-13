@@ -14,8 +14,9 @@ public class Utilities {
     }
 
     public static String randomName(String extension) {
-        if(isNull(extension) || extension.isBlank() ) return randomName();
-        if(!extension.startsWith(".")) extension = ".".concat(extension);
+        if (isNull(extension) || extension.isBlank()) return randomName();
+        if (!extension.startsWith(".")) extension = ".".concat(extension);
         return UUID.randomUUID() + extension;
     }
+
 }

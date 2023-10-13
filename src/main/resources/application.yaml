@@ -1,8 +1,8 @@
 logging:
   level:
-    sql: debug
-    'org.hibernate.SQL': debug
-    'com.h2database:h2': debug
+    sql: info
+    'org.hibernate.SQL': info
+    'com.h2database:h2': info
 
 spring:
   main:
@@ -17,6 +17,13 @@ spring:
     driver-class-name: org.h2.Driver
     username: bats
     password:
+  jpa:
+    open-in-view: false
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        generate_statistics: false
   sql:
     init:
       mode: always

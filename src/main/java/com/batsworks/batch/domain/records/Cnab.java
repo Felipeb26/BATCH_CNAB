@@ -1,5 +1,9 @@
 package com.batsworks.batch.domain.records;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.ParseException;
