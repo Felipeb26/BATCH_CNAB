@@ -1,5 +1,6 @@
 package com.batsworks.batch.controller;
 
+import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.service.CnabService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,7 @@ public class ArquivoController {
     private final CnabService service;
 
     @PostMapping("upload")
-    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file, @RequestParam("type") String type) throws Exception {
+    public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file, @RequestParam("type") CnabType type) throws Exception {
         service.uploadCnabFile(file, type);
         return ResponseEntity.ok().body("Processamento Iniciado");
     }

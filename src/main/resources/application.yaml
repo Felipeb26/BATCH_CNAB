@@ -1,4 +1,12 @@
+logging:
+  level:
+    sql: debug
+    'org.hibernate.SQL': debug
+    'com.h2database:h2': debug
+
 spring:
+  main:
+    banner-mode: OFF
   batch:
     jdbc:
       initialize-schema: always
