@@ -1,3 +1,9 @@
+  CREATE TABLE IF NOT EXISTS boleto_erro(
+  	id SERIAL PRIMARY KEY,
+  	message varchar(255),
+  	line int
+);
+
 CREATE TABLE IF NOT EXISTS transacao(
     id SERIAL primary key,
     tipo int,

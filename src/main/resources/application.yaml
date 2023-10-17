@@ -3,6 +3,7 @@ logging:
     sql: info
     'org.hibernate.SQL': info
     'com.h2database:h2': info
+    'com.batsworks.batch.config.utils': debug
 
 spring:
   main:

@@ -3,12 +3,14 @@ package com.batsworks.batch.config.cnab;
 import com.batsworks.batch.domain.entity.ViaCep;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 
 import static java.util.Objects.isNull;
 
+@Slf4j
 public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
 
     @Autowired
@@ -19,8 +21,8 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         if (isNull(cnab.controleParticipante()) || cnab.controleParticipante().isBlank())
             return null;
 
-        var template = restTemplate.getForEntity("https://viacep.com.br/ws/" + cnab.cep() + cnab.sufixoCEP() + "/json/", ViaCep.class);
-        System.out.println("testes" + template.getStatusCode());
+//        log.info("CEP: {}-{}, TITULO: {}", cnab.cep(), cnab.sufixoCEP(), cnab.numeroDocumento());
+//        var template = restTemplate.getForEntity("https://viacep.com.br/ws/" + cnab.cep() + cnab.sufixoCEP() + "/json/", ViaCep.class);
         return new Cnab(null, cnab.identRegistro(), cnab.agenciaDebito(), cnab.digitoAgencia(), cnab.razaoAgencia(), cnab.contaCorrente(), cnab.digitoConta(), cnab.identBeneficiario(),
                 cnab.controleParticipante(), cnab.codigoBanco(), cnab.campoMulta(), cnab.percentualMulta(), cnab.nossoNumero(), cnab.digitoConferenciaNumeroBanco(),
                 cnab.descontoDia(), cnab.condicaoEmpissaoPapeladaCobranca(), cnab.boletoDebitoAutomatico(), cnab.identificacaoOcorrencia(), cnab.numeroDocumento(),

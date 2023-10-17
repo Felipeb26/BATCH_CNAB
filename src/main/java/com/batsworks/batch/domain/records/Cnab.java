@@ -1,15 +1,11 @@
 package com.batsworks.batch.domain.records;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
-import static java.util.Objects.isNull;
+import static com.batsworks.batch.config.utils.Utilities.parseDate;
 
 public record Cnab(
         Integer id,
@@ -64,10 +60,4 @@ public record Cnab(
                 valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem, sequencialRegistro);
     }
 
-    private Date parseDate(String date) throws ParseException {
-        var dateFormat = new SimpleDateFormat("ddMMyy");
-        if (isNull(date) || date.isBlank())
-            return null;
-        return new Date(dateFormat.parse(date).getTime());
-    }
 }

@@ -1,6 +1,8 @@
 package com.batsworks.batch.service.job;
 
+import com.batsworks.batch.config.utils.LoggingRequestInterceptor;
 import com.batsworks.batch.domain.entity.CnabEntity;
+import com.batsworks.batch.partition.ColumnRangePartitioner;
 import com.batsworks.batch.repository.CnabRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -22,12 +24,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.client.BufferingClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -110,11 +117,6 @@ public class GenerateCNABService {
         jobLauncher.setTaskExecutor(taskExecutor);
         jobLauncher.afterPropertiesSet();
         return jobLauncher;
-    }
-
-    @Bean
-    RestTemplate restTemplate(){
-        return new RestTemplate();
     }
 
 }

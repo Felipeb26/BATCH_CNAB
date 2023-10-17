@@ -1,11 +1,13 @@
 package com.batsworks.batch.service;
 
+import com.batsworks.batch.config.cnab.CnabLineMapper;
 import com.batsworks.batch.config.cnab.CnabReader;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.Cnab400;
+import com.batsworks.batch.domain.records.DefaultMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.item.file.LineMapper;
@@ -19,10 +21,12 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static com.batsworks.batch.config.utils.Utilities.randomName;
 import static java.util.Objects.nonNull;
 
+@Slf4j
 @Service
 public class CnabService {
 
@@ -37,16 +41,21 @@ public class CnabService {
     @Autowired
     private CnabReader<Cnab400> cnabReader;
 
-    public void uploadCnabFile(MultipartFile file, CnabType tipo) throws Exception {
-        var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomName());
+    public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
+        try {
+            var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomName());
 
-        var jobParameters = new JobParametersBuilder()
-                .addJobParameter("cnab", fileName, String.class, false)
-                .toJobParameters();
+            var jobParameters = new JobParametersBuilder()
+                    .addJobParameter("cnab", fileName, String.class, false)
+                    .toJobParameters();
 
-        cnabReaderConfig(file);
-        if (tipo.equals(CnabType.CNAB400))
-            jobLauncherAsync.run(jobCnab, jobParameters);
+            cnabReaderConfig(file);
+            if (tipo.equals(CnabType.CNAB400))
+                jobLauncherAsync.run(jobCnab, jobParameters);
+            return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
+        } catch (Exception e) {
+            return new DefaultMessage(e.getMessage(), Status.PROCESSADO_ERRO);
+        }
     }
 
     private void cnabReaderConfig(MultipartFile file) throws IOException {
@@ -59,21 +68,16 @@ public class CnabService {
     }
 
     public LineMapper<Cnab400> lineMapper() {
-        DefaultLineMapper<Cnab400> lineMapper = new DefaultLineMapper<>();
+        DefaultLineMapper<Cnab400> lineMapper = new CnabLineMapper<>();
 
         FixedLengthTokenizer lineTokenizer = new FixedLengthTokenizer();
         lineTokenizer.setStrict(false);
-        lineTokenizer.setNames("identRegistro", "agenciaDebito", "digitoAgencia",
-                "razaoAgencia", "contaCorrente", "digitoConta",
-                "identBeneficiario", "controleParticipante", "codigoBanco",
-                "campoMulta", "percentualMulta", "nossoNumero",
-                "digitoConferenciaNumeroBanco", "descontoDia", "condicaoEmpissaoPapeladaCobranca",
-                "boletoDebitoAutomatico", "identificacaoOcorrencia", "numeroDocumento",
-                "dataVencimento", "valorTitulo", "especieTitulo",
-                "dataEmissao", "primeiraInstrucao", "segundaInstrucao",
-                "moraDia", "dataLimiteDescontoConcessao", "valorDesconto",
-                "valorIOF", "valorAbatimento", "tipoPagador",
-                "nomePagador", "endereco", "primeiraMensagem",
+        lineTokenizer.setNames("identRegistro", "agenciaDebito", "digitoAgencia", "razaoAgencia", "contaCorrente", "digitoConta",
+                "identBeneficiario", "controleParticipante", "codigoBanco", "campoMulta", "percentualMulta",
+                "nossoNumero", "digitoConferenciaNumeroBanco", "descontoDia", "condicaoEmpissaoPapeladaCobranca",
+                "boletoDebitoAutomatico", "identificacaoOcorrencia", "numeroDocumento", "dataVencimento", "valorTitulo",
+                "especieTitulo", "dataEmissao", "primeiraInstrucao", "segundaInstrucao", "moraDia", "dataLimiteDescontoConcessao",
+                "valorDesconto", "valorIOF", "valorAbatimento", "tipoPagador", "nomePagador", "endereco", "primeiraMensagem",
                 "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro");
 
         lineTokenizer.setColumns(new Range(1, 1), new Range(2, 6), new Range(7, 7), new Range(8, 12), new Range(13, 19),
@@ -91,16 +95,16 @@ public class CnabService {
         return lineMapper;
     }
 
-    public Object downloadCnab() {
+    public DefaultMessage downloadCnab() {
         try {
             var jobParameters = new JobParametersBuilder()
                     .addJobParameter("download_cnab", randomName(), String.class, false)
                     .toJobParameters();
             asyncWrite.run(jobWriteCnab, jobParameters);
+            return new DefaultMessage("Download", Status.DOWNLOADING);
         } catch (Exception e) {
-            System.out.printf("log: {}\n", e.getMessage());
-            e.printStackTrace();
+            log.error("log: {}", e.getMessage());
+            return new DefaultMessage(e.getMessage(), Status.DOWNLOAD_ERROR);
         }
-        return Status.PROCESSANDO;
     }
 }
