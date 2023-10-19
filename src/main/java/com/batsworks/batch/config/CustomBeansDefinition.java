@@ -1,6 +1,8 @@
 package com.batsworks.batch.config;
 
+import com.batsworks.batch.config.cnab.CnabSkipPolicy;
 import com.batsworks.batch.config.utils.LoggingRequestInterceptor;
+import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.BufferingClientHttpRequestFactory;
@@ -12,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-public class RandomBeans {
+public class CustomBeansDefinition {
 
     @Bean
     RestTemplate restTemplate() {
@@ -23,4 +25,8 @@ public class RandomBeans {
         return restTemplate;
     }
 
+    @Bean
+    SkipPolicy skipPolicy() {
+        return new CnabSkipPolicy();
+    }
 }

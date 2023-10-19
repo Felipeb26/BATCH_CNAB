@@ -2,7 +2,6 @@ package com.batsworks.batch.service.job;
 
 import com.batsworks.batch.config.cnab.CnabProcessor;
 import com.batsworks.batch.config.cnab.CnabReader;
-import com.batsworks.batch.config.cnab.CnabSkipPolicy;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.partition.ColumnRangePartitioner;
@@ -17,8 +16,6 @@ import org.springframework.batch.core.partition.support.TaskExecutorPartitionHan
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.skip.SkipPolicy;
-import org.springframework.batch.item.ItemProcessor;
-import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -53,33 +50,35 @@ public class Cnab400Service {
                 .build();
     }
 
+    /**
+     * Dois steps foram setados 1 master e 1 minor, o master como principal e o minor como responsavel pelo restante particionado
+     **/
     @Bean
-    Step masterStepCnab(ItemReader<Cnab400> cnabReader, ItemProcessor<Cnab400, Cnab> processor, ItemWriter<Cnab> writerCnab) {
-        var minorCnab = minorStepCnab(cnabReader, processor, writerCnab);
+    Step masterStepCnab(Step minorStepCnab, ItemWriter<Cnab> writerCnab) {
         return new StepBuilder("CNAB_400_MASTER_STEP", repository)
-                .partitioner(minorCnab.getName(), columnRangePartitioner())
-                .partitionHandler(partitionHandler(minorCnab))
+                .partitioner(minorStepCnab.getName(), columnRangePartitioner())
+                .partitionHandler(partitionHandler(minorStepCnab))
                 .allowStartIfComplete(true)
                 .build();
     }
 
     @Bean
-    Step minorStepCnab(ItemReader<Cnab400> cnabReader, ItemProcessor<Cnab400, Cnab> processor, ItemWriter<Cnab> writerCnab) {
+    Step minorStepCnab(CnabProcessor processor, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Cnab>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
-                .reader(cnabReader)
+                .reader(cnabReader())
                 .processor(processor)
                 .writer(writerCnab)
                 .faultTolerant()
-                .skipPolicy(skipPolicy())
+                .skipPolicy(skipPolicy)
                 .build();
     }
 
     @Bean
-    CnabReader<Cnab400> cnabReader(LineMapper<Cnab400> lineMapper) {
+    CnabReader<Cnab400> cnabReader() {
         var cnab = new CnabReader<Cnab400>();
-        cnab.setLineMapper(lineMapper);
+        cnab.setLineMapper(lineMapper());
         return cnab;
     }
 
@@ -96,11 +95,11 @@ public class Cnab400Service {
                         " codigoBanco, campoMulta, percentualMulta, nossoNumero, digitoConferenciaNumeroBanco,descontoDia, condicaoEmpissaoPapeladaCobranca," +
                         " boletoDebitoAutomatico,identificacaoOcorrencia, numeroDocumento,dataVencimento, valorTitulo, especieTitulo, dataEmissao, primeiraInstrucao," +
                         " segundaInstrucao, moraDia,dataLimiteDescontoConcessao, valorDesconto, valorIOF, valorAbatimento, tipoPagador, nomePagador, endereco,primeiraMensagem," +
-                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
+                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro,arquivo) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
                         ":digitoConta,:identBeneficiario,:controleParticipante,:codigoBanco,:campoMulta,:percentualMulta,:nossoNumero,:digitoConferenciaNumeroBanco," +
                         ":descontoDia,:condicaoEmpissaoPapeladaCobranca,:boletoDebitoAutomatico,:identificacaoOcorrencia,:numeroDocumento,:dataVencimento,:valorTitulo," +
                         ":especieTitulo,:dataEmissao,:primeiraInstrucao,:segundaInstrucao,:moraDia,:dataLimiteDescontoConcessao,:valorDesconto,:valorIOF,:valorAbatimento," +
-                        ":tipoPagador,:nomePagador,:endereco,:primeiraMensagem,:cep,:sufixoCEP,:segundaMensagem,:sequencialRegistro)")
+                        ":tipoPagador,:nomePagador,:endereco,:primeiraMensagem,:cep,:sufixoCEP,:segundaMensagem,:sequencialRegistro,:arquivo.id)")
                 .beanMapped().build();
     }
 
@@ -138,6 +137,10 @@ public class Cnab400Service {
         return lineMapper;
     }
 
+    /**
+     * JobLauncher é chamado pelo endpoint de forma assyncrona
+     * TaskExecutor executa de forma asycrona - multithread
+     **/
     @Bean
     JobLauncher jobLauncherAsync(JobRepository repository) throws Exception {
         var jobLauncher = new TaskExecutorJobLauncher();
@@ -156,14 +159,8 @@ public class Cnab400Service {
         return taskExecutor;
     }
 
-    @Bean
-    SkipPolicy skipPolicy() {
-        return new CnabSkipPolicy();
-    }
-
-
     /**
-     * Particiona para usar ao menos 2 Threads para maior velocidade de upload
+     * Particiona para usar uma quantidade especificada de threads para maior velocidade
      **/
     @Bean
     ColumnRangePartitioner columnRangePartitioner() {

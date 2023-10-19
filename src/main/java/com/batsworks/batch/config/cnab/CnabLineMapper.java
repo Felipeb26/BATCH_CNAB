@@ -9,11 +9,10 @@ public class CnabLineMapper<T> extends DefaultLineMapper<T> {
     public T mapLine(String line, int lineNumber) throws Exception {
         try {
             if (line.length() > 400)
-                throw new CnabException("Only allowed 400 caracteres to cnab 400", lineNumber, line);
+                throw new CnabException("CNAB 400 with ocurrency " + line.substring(108, 110), lineNumber, line);
             return super.mapLine(line, lineNumber);
         } catch (Exception e) {
             throw new CnabException(e.getMessage(), lineNumber, line);
         }
     }
-
 }

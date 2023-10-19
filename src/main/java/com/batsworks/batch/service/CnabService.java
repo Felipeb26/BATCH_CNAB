@@ -2,10 +2,12 @@ package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.cnab.CnabLineMapper;
 import com.batsworks.batch.config.cnab.CnabReader;
+import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.domain.records.DefaultMessage;
+import com.batsworks.batch.repository.ArquivoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -21,15 +23,15 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 
-import static com.batsworks.batch.config.utils.Utilities.randomName;
+import static com.batsworks.batch.config.utils.Utilities.*;
 import static java.util.Objects.nonNull;
 
 @Slf4j
 @Service
 public class CnabService {
-
+    @Autowired
+    private ArquivoRepository arquivoRepository;
     @Autowired
     private JobLauncher jobLauncherAsync;
     @Autowired
@@ -41,12 +43,25 @@ public class CnabService {
     @Autowired
     private CnabReader<Cnab400> cnabReader;
 
+
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
         try {
             var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomName());
 
+            var data = compressData(file.getBytes());
+            var arquivo = Arquivo.builder()
+                    .name(fileName)
+                    .extension(fileType(file.getInputStream(), fileName))
+                    .fileSize(String.valueOf(file.getSize()))
+                    .situacao(Status.PROCESSANDO)
+                    .file(byteToBase64String(data))
+                    .build();
+
+            arquivo = arquivoRepository.saveAndFlush(arquivo);
+
             var jobParameters = new JobParametersBuilder()
                     .addJobParameter("cnab", fileName, String.class, false)
+                    .addJobParameter("id", arquivo.getId(), Long.class, true)
                     .toJobParameters();
 
             cnabReaderConfig(file);
@@ -54,6 +69,7 @@ public class CnabService {
                 jobLauncherAsync.run(jobCnab, jobParameters);
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
+            log.error(e.getMessage());
             return new DefaultMessage(e.getMessage(), Status.PROCESSADO_ERRO);
         }
     }

@@ -12,4 +12,4 @@
 | PATH                | PARAM-NAME | PARAM-TYPE    |
 |---------------------|------------|---------------|
 | /v1/arquivo/upload/ | file       | multipartfile |
-|                     | type       | 400           |
+|                     | type       | CNAB400       |

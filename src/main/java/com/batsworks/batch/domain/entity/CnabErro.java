@@ -5,17 +5,23 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
 @Data
 @Builder
 @Entity
-@Table(name = "BOLETO_ERRO")
+@Table(name = "cnab_erro")
 @AllArgsConstructor
 @NoArgsConstructor
-public class BoletoErro {
+public class CnabErro implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String message;
-    private Long line;
+    private String erro;
+    private Long lineNumber;
+    private String line;
+
 }

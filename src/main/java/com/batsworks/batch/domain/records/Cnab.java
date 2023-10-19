@@ -1,6 +1,8 @@
 package com.batsworks.batch.domain.records;
 
 
+import com.batsworks.batch.domain.entity.Arquivo;
+
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.ParseException;
@@ -45,8 +47,9 @@ public record Cnab(
         String cep,
         String sufixoCEP,
         String segundaMensagem,
-        String sequencialRegistro
-) {
+        String sequencialRegistro,
+        Arquivo arquivo) {
+
     public Cnab withDates(String dataVencimento, String dataEmissao, String dataLimiteDescontoConcessao) throws ParseException {
         var dataLimiteDescontoConcessa = parseDate(dataLimiteDescontoConcessao);
         var dataVenciment = parseDate(dataVencimento);
@@ -57,7 +60,7 @@ public record Cnab(
                 digitoConferenciaNumeroBanco, descontoDia, condicaoEmpissaoPapeladaCobranca, boletoDebitoAutomatico,
                 identificacaoOcorrencia, numeroDocumento, dataVenciment, valorTitulo, especieTitulo, dataEmissa,
                 primeiraInstrucao, segundaInstrucao, moraDia, dataLimiteDescontoConcessa, valorDesconto, valorIOF,
-                valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem, sequencialRegistro);
+                valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem, sequencialRegistro, arquivo);
     }
 
 }
