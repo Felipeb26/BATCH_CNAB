@@ -1,7 +1,7 @@
 package com.batsworks.batch.service.job;
 
 import com.batsworks.batch.domain.entity.CnabEntity;
-import com.batsworks.batch.repository.CnabRepository;
+import com.batsworks.batch.database.repository.CnabRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;

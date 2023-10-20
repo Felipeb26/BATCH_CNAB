@@ -55,6 +55,6 @@ public class CnabEntity implements Serializable {
     private String segundaMensagem;
     private String sequencialRegistro;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "arquivo")
-    private Arquivo arquivo;
+    @JoinColumn(name = "idArquivo")
+    private Arquivo idArquivo;
 }

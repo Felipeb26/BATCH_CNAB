@@ -1,13 +1,5 @@
 CREATE DATABASE IF NOT EXISTS CNAB_CODES;
 
-CREATE TABLE IF NOT EXISTS cnab_erro(
-  	id SERIAL PRIMARY KEY,
-  	message varchar(255),
-  	line varchar(255),
-  	lineNumber int,
-  	erro varchar(255)
-);
-
 CREATE TABLE IF NOT EXISTS arquivo(
 	id int PRIMARY KEY auto_increment,
 	name varchar(255),
@@ -16,6 +8,16 @@ CREATE TABLE IF NOT EXISTS arquivo(
 	quantidade int,
 	situacao varchar(255),
 	arquivo blob
+);
+
+CREATE TABLE IF NOT EXISTS cnab_erro(
+  	id SERIAL PRIMARY KEY,
+  	message varchar(255),
+  	line varchar(255),
+  	lineNumber int,
+  	erro varchar(255),
+  	idArquivo int,
+    foreign key (idArquivo) references arquivo(id)
 );
 
 CREATE TABLE IF NOT EXISTS transacao(
@@ -69,6 +71,6 @@ CREATE TABLE IF NOT EXISTS cnab(
     sufixoCEP varchar(255),
     segundaMensagem varchar(255),
     sequencialRegistro varchar(255),
-    arquivo int,
-    foreign key (arquivo) references arquivo(id)
+    idArquivo int,
+    foreign key (idArquivo) references arquivo(id)
 );

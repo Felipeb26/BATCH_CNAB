@@ -1,14 +1,12 @@
 package com.batsworks.batch.domain.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 
-@Data
+@Getter
+@Setter
 @Builder
 @Entity
 @Table(name = "cnab_erro")
@@ -23,5 +21,8 @@ public class CnabErro implements Serializable {
     private String erro;
     private Long lineNumber;
     private String line;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idArquivo")
+    private Arquivo idArquivo;
 
 }

@@ -7,9 +7,18 @@ import static java.lang.Long.parseLong;
 @Getter
 public class CnabException extends Exception {
 
-    private Long actualLine;
-    private int size;
-    private String line;
+    private final Long actualLine;
+    private final int size;
+    private final String line;
+    private Long arquivo;
+
+    public CnabException(String message, int actualLine, String line, Long arquivo) {
+        super(message);
+        this.actualLine = assertToLongNumber(actualLine);
+        this.size = line.length();
+        this.line = line;
+        this.arquivo = arquivo;
+    }
 
     public CnabException(String message, int actualLine, String line) {
         super(message);

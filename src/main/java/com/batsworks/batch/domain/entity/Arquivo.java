@@ -3,6 +3,7 @@ package com.batsworks.batch.domain.entity;
 import com.batsworks.batch.domain.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -14,6 +15,7 @@ import java.util.Set;
 @Table(name = "arquivo")
 @AllArgsConstructor
 @NoArgsConstructor
+@DynamicUpdate
 public class Arquivo implements Serializable {
 
     @Id
@@ -28,7 +30,9 @@ public class Arquivo implements Serializable {
     private Status situacao;
     @Column(name = "arquivo")
     private String file;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "arquivo")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "idArquivo")
     private Set<CnabEntity> cnab;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "idArquivo")
+    private Set<CnabErro> cnabErros;
 
 }

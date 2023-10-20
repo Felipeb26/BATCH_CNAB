@@ -2,22 +2,25 @@ package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.cnab.CnabLineMapper;
 import com.batsworks.batch.config.cnab.CnabReader;
+import com.batsworks.batch.database.repository.ArquivoRepository;
+import com.batsworks.batch.database.repository.CnabRepository;
 import com.batsworks.batch.domain.entity.Arquivo;
+import com.batsworks.batch.domain.entity.CnabEntity;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.domain.records.DefaultMessage;
-import com.batsworks.batch.repository.ArquivoRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.annotation.AfterJob;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,19 +32,15 @@ import static java.util.Objects.nonNull;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class CnabService {
-    @Autowired
-    private ArquivoRepository arquivoRepository;
-    @Autowired
-    private JobLauncher jobLauncherAsync;
-    @Autowired
-    private JobLauncher asyncWrite;
-    @Autowired
-    private Job jobCnab;
-    @Autowired
-    private Job jobWriteCnab;
-    @Autowired
-    private CnabReader<Cnab400> cnabReader;
+
+    private final ArquivoRepository arquivoRepository;
+    private final JobLauncher jobLauncherAsync;
+    private final JobLauncher asyncWrite;
+    private final Job jobCnab;
+    private final Job jobWriteCnab;
+    private final CnabReader<Cnab400> cnabReader;
 
 
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
@@ -123,4 +122,5 @@ public class CnabService {
             return new DefaultMessage(e.getMessage(), Status.DOWNLOAD_ERROR);
         }
     }
+
 }

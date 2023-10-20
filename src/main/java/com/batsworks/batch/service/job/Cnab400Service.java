@@ -2,12 +2,15 @@ package com.batsworks.batch.service.job;
 
 import com.batsworks.batch.config.cnab.CnabProcessor;
 import com.batsworks.batch.config.cnab.CnabReader;
+import com.batsworks.batch.config.cnab.CnabSkipListenner;
+import com.batsworks.batch.database.repository.CnabRepository;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.partition.ColumnRangePartitioner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.annotation.AfterJob;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -40,6 +43,7 @@ public class Cnab400Service {
 
     private final PlatformTransactionManager platformTransactionManager;
     private final JobRepository repository;
+    private final CnabRepository cnabRepository;
 
     @Bean
     Job jobCnab(Step masterStepCnab, JobRepository jobRepository) {
@@ -63,7 +67,7 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step minorStepCnab(CnabProcessor processor, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy) {
+    Step minorStepCnab(CnabProcessor processor, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Cnab>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
@@ -72,6 +76,7 @@ public class Cnab400Service {
                 .writer(writerCnab)
                 .faultTolerant()
                 .skipPolicy(skipPolicy)
+                .listener(cnabSkipListenner)
                 .build();
     }
 
@@ -95,7 +100,7 @@ public class Cnab400Service {
                         " codigoBanco, campoMulta, percentualMulta, nossoNumero, digitoConferenciaNumeroBanco,descontoDia, condicaoEmpissaoPapeladaCobranca," +
                         " boletoDebitoAutomatico,identificacaoOcorrencia, numeroDocumento,dataVencimento, valorTitulo, especieTitulo, dataEmissao, primeiraInstrucao," +
                         " segundaInstrucao, moraDia,dataLimiteDescontoConcessao, valorDesconto, valorIOF, valorAbatimento, tipoPagador, nomePagador, endereco,primeiraMensagem," +
-                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro,arquivo) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
+                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro,idArquivo) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
                         ":digitoConta,:identBeneficiario,:controleParticipante,:codigoBanco,:campoMulta,:percentualMulta,:nossoNumero,:digitoConferenciaNumeroBanco," +
                         ":descontoDia,:condicaoEmpissaoPapeladaCobranca,:boletoDebitoAutomatico,:identificacaoOcorrencia,:numeroDocumento,:dataVencimento,:valorTitulo," +
                         ":especieTitulo,:dataEmissao,:primeiraInstrucao,:segundaInstrucao,:moraDia,:dataLimiteDescontoConcessao,:valorDesconto,:valorIOF,:valorAbatimento," +
@@ -160,7 +165,8 @@ public class Cnab400Service {
     }
 
     /**
-     * Particiona para usar uma quantidade especificada de threads para maior velocidade
+     * Particiona para usar uma quantidade especificada de threads para usar de parallelismo
+     * para maior velocidade em arquivos grandes
      **/
     @Bean
     ColumnRangePartitioner columnRangePartitioner() {
@@ -176,4 +182,11 @@ public class Cnab400Service {
         return taskExecutorPartitionHandler;
     }
 
+
+
+    @AfterJob
+    public void atualizaArquivo() {
+        var cnabs = cnabRepository.findAllByIdArquivo(4L);
+        System.out.println(cnabs.toString());
+    }
 }

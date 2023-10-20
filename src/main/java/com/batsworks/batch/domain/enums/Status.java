@@ -7,12 +7,13 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum Status {
 
-    COMMON_ERROR(0L),
-    PROCESSANDO(1L),
-    PROCESSADO_ERRO(2L),
-    PROCESSADO_SUCESSO(3L),
-    DOWNLOADING(4L),
-    DOWNLOAD_ERROR(5L);
+    UNKNOWN(0L),
+    COMMON_ERROR(1L),
+    PROCESSANDO(2L),
+    PROCESSADO_ERRO(3L),
+    PROCESSADO_SUCESSO(4L),
+    DOWNLOADING(5L),
+    DOWNLOAD_ERROR(6L);
 
     private final Long code;
 }

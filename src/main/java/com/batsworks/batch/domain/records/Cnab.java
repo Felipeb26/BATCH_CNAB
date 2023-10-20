@@ -63,4 +63,13 @@ public record Cnab(
                 valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem, sequencialRegistro, arquivo);
     }
 
+    public Cnab withArquivo(Arquivo arquivoNovo){
+        return new Cnab(id, identRegistro, agenciaDebito, digitoAgencia, razaoAgencia, contaCorrente, digitoConta,
+                identBeneficiario, controleParticipante, codigoBanco, campoMulta, percentualMulta, nossoNumero,
+                digitoConferenciaNumeroBanco, descontoDia, condicaoEmpissaoPapeladaCobranca, boletoDebitoAutomatico,
+                identificacaoOcorrencia, numeroDocumento, dataVencimento, valorTitulo, especieTitulo, dataEmissao,
+                primeiraInstrucao, segundaInstrucao, moraDia, dataLimiteDescontoConcessao, valorDesconto, valorIOF,
+                valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem, sequencialRegistro, arquivoNovo);
+    }
+
 }
