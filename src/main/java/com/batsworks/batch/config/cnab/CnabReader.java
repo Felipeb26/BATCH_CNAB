@@ -1,30 +1,31 @@
 package com.batsworks.batch.config.cnab;
 
-import org.springframework.batch.core.Step;
-import org.springframework.batch.core.StepExecution;
-import org.springframework.batch.core.annotation.BeforeStep;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
-import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
 
+@Slf4j
 public class CnabReader<T> extends FlatFileItemReader<T> {
-    private static byte[] stream;
+
+    private byte[] myResource;
+
+    public void setCustomResource(byte[] myResource) {
+        this.myResource = myResource;
+    }
+
 
     @Override
     public void setResource(Resource resource) {
-        if (nonNull(stream)) {
-            super.setResource(new ByteArrayResource(stream));
-        } else super.setResource(resource);
-    }
-
-    public void setStream(byte[] stream) {
-        if (nonNull(stream)) this.stream = stream;
+        resource = isNull(myResource) ? resource : new ByteArrayResource(myResource);
+        super.setResource(resource);
     }
 
     @Override
     public void setStrict(boolean strict) {
         super.setStrict(false);
     }
+
 }

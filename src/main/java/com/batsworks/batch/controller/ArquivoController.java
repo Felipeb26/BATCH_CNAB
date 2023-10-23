@@ -16,13 +16,17 @@ public class ArquivoController {
     private final CnabService service;
 
     @PostMapping("upload")
-    public ResponseEntity<DefaultMessage> upload(@RequestParam("file") MultipartFile file, @RequestParam("type") CnabType type) throws Exception {
+    public ResponseEntity<DefaultMessage> upload(@RequestParam("file") MultipartFile file, @RequestParam("type") CnabType type) {
         return ResponseEntity.ok().body(service.uploadCnabFile(file, type));
     }
 
     @GetMapping("download")
-    public ResponseEntity<DefaultMessage> download(){
+    public ResponseEntity<DefaultMessage> download() {
         return ResponseEntity.ok(service.downloadCnab());
     }
 
+    @GetMapping("/")
+    public String string(){
+        return "Hello World";
+    }
 }

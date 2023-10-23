@@ -59,7 +59,7 @@ public class Utilities {
         deflater.finish();
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length)) {
-            byte[] temp = new byte[4 * 1024];
+            byte[] temp = new byte[8 * 1024];
             while (!deflater.finished()) {
                 int size = deflater.deflate(temp);
                 baos.write(temp, 0, size);
@@ -75,22 +75,24 @@ public class Utilities {
         inflater.setInput(data);
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length)) {
-            byte[] temp = new byte[4 * 1024];
+            byte[] temp = new byte[8 * 1024];
             while (!inflater.finished()) {
                 int count = inflater.inflate(temp);
                 baos.write(temp, 0, count);
             }
-        } catch (Exception ignored) {
-            log.error(ignored.getMessage());
+            return baos.toByteArray();
+        } catch (Exception e) {
+            log.error(e.getMessage());
         }
         return data;
     }
 
-    public static String byteToBase64String(byte[] data) {
+    public static String encodeByteToBASE64String(byte[] data) {
         return Base64.getEncoder().encodeToString(data);
     }
-    public static byte[] stringBase64ToByte(byte[] data) {
+    public static byte[] decodeBASE64(byte[] data) {
         return Base64.getDecoder().decode(data);
     }
+
 
 }

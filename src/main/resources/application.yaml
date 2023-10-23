@@ -1,7 +1,7 @@
 logging:
   level:
-    sql: info
-    'org.hibernate.SQL': info
+    sql: trace
+    'org.hibernate.SQL': trace
     'com.h2database:h2': info
     'com.batsworks.batch.config.utils': debug
 
@@ -10,22 +10,24 @@ spring:
     banner-mode: OFF
   batch:
     jdbc:
-      initialize-schema: always
+#      schema: classpath:spring\batch\src\main\resources\chema.sql
+      initialize-schema: NEVER
     job:
       enabled: false
   datasource:
-    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: SA
-    password: Felipe@2001
-#    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    username: root
-#    password:
+#    url: jdbc:sqlserver://serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+#    username: SA
+#    password: Felipe@2001
+    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password:
   jpa:
-    database-platform: org.hibernate.dialect.SQLServerDialect
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    #    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
-      dialect: org.hibernate.dialect.SQLServerDialect
+#      dialect: org.hibernate.dialect.SQLServerDialect
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     open-in-view: false

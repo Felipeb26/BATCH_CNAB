@@ -1,14 +1,15 @@
 package com.batsworks.batch.config.cnab;
 
-import com.batsworks.batch.database.repository.ArquivoRepository;
-import com.batsworks.batch.database.repository.CnabErroRepository;
-import com.batsworks.batch.database.repository.CnabRepository;
+import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.repository.CnabErroRepository;
+import com.batsworks.batch.repository.CnabRepository;
 import com.batsworks.batch.domain.enums.Status;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import static java.util.Objects.isNull;
 

@@ -2,19 +2,16 @@ package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.cnab.CnabLineMapper;
 import com.batsworks.batch.config.cnab.CnabReader;
-import com.batsworks.batch.database.repository.ArquivoRepository;
-import com.batsworks.batch.database.repository.CnabRepository;
 import com.batsworks.batch.domain.entity.Arquivo;
-import com.batsworks.batch.domain.entity.CnabEntity;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.domain.records.DefaultMessage;
+import com.batsworks.batch.repository.ArquivoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.annotation.AfterJob;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -53,10 +50,10 @@ public class CnabService {
                     .extension(fileType(file.getInputStream(), fileName))
                     .fileSize(String.valueOf(file.getSize()))
                     .situacao(Status.PROCESSANDO)
-                    .file(byteToBase64String(data))
+                    .file(encodeByteToBASE64String(data))
                     .build();
 
-            arquivo = arquivoRepository.saveAndFlush(arquivo);
+            arquivo = arquivoRepository.save(arquivo);
 
             var jobParameters = new JobParametersBuilder()
                     .addJobParameter("cnab", fileName, String.class, false)
@@ -75,11 +72,13 @@ public class CnabService {
 
     private void cnabReaderConfig(MultipartFile file) throws IOException {
         cnabReader.setLineMapper(lineMapper());
-        cnabReader.setStream(file.getBytes());
-        cnabReader.setResource(file.getResource());
-        cnabReader.setStrict(false);
         cnabReader.setLinesToSkip(1);
+        cnabReader.setStrict(false);
+        cnabReader.setSaveState(false);
         cnabReader.setName("CUSTOM_CNAB_READER");
+        cnabReader.setCustomResource(file.getBytes());
+        cnabReader.setResource(file.getResource());
+
     }
 
     public LineMapper<Cnab400> lineMapper() {

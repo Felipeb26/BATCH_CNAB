@@ -3,7 +3,7 @@ package com.batsworks.batch.domain.entity;
 import com.batsworks.batch.domain.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.data.domain.Persistable;
 
 import java.io.Serializable;
 import java.util.Set;
@@ -15,11 +15,10 @@ import java.util.Set;
 @Table(name = "arquivo")
 @AllArgsConstructor
 @NoArgsConstructor
-@DynamicUpdate
-public class Arquivo implements Serializable {
+@org.hibernate.annotations.Entity(dynamicUpdate = true)
+public class Arquivo implements Serializable, Persistable<Long> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String extension;
@@ -35,4 +34,9 @@ public class Arquivo implements Serializable {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "idArquivo")
     private Set<CnabErro> cnabErros;
 
+    @Override
+    public boolean isNew() {
+        return false;
+    }
 }
+

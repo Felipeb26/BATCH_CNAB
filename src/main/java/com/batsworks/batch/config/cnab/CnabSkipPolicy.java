@@ -3,8 +3,8 @@ package com.batsworks.batch.config.cnab;
 
 import com.batsworks.batch.config.exception.CnabException;
 import com.batsworks.batch.config.utils.BatchParameters;
-import com.batsworks.batch.database.repository.ArquivoRepository;
-import com.batsworks.batch.database.repository.CnabErroRepository;
+import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.repository.CnabErroRepository;
 import com.batsworks.batch.domain.entity.CnabErro;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.step.skip.SkipLimitExceededException;
