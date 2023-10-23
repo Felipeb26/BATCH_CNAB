@@ -14,12 +14,18 @@ spring:
     job:
       enabled: false
   datasource:
-    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password:
+    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: SA
+    password: Felipe@2001
+#    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: root
+#    password:
   jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
+      dialect: org.hibernate.dialect.SQLServerDialect
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     open-in-view: false
@@ -32,7 +38,7 @@ spring:
         order_pdates: true
   sql:
     init:
-      mode: always
+      mode: NEVER
   h2:
     console:
       enabled: true

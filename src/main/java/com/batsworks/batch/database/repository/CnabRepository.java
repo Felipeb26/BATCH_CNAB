@@ -9,8 +9,8 @@ import java.util.Optional;
 
 public interface CnabRepository extends JpaRepository<CnabEntity, Long> {
 
-
-    @Query("FROM CnabEntity ce WHERE idArquivo.id=?1")
+    @Query("FROM CnabEntity ce WHERE ce.idArquivo.id=?1")
     Optional<List<CnabEntity>> findAllByIdArquivo(Long idArquivo);
-
+    @Query("SELECT COUNT(ce) FROM CnabEntity ce WHERE ce.idArquivo.id=?1")
+    Long countCnabsByIdArquivo(Long idArquivo);
 }

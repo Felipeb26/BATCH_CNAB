@@ -3,14 +3,13 @@ package com.batsworks.batch.service.job;
 import com.batsworks.batch.config.cnab.CnabProcessor;
 import com.batsworks.batch.config.cnab.CnabReader;
 import com.batsworks.batch.config.cnab.CnabSkipListenner;
-import com.batsworks.batch.database.repository.CnabRepository;
+import com.batsworks.batch.config.cnab.CnabTasklet;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.partition.ColumnRangePartitioner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.annotation.AfterJob;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -43,13 +42,13 @@ public class Cnab400Service {
 
     private final PlatformTransactionManager platformTransactionManager;
     private final JobRepository repository;
-    private final CnabRepository cnabRepository;
 
     @Bean
     Job jobCnab(Step masterStepCnab, JobRepository jobRepository) {
         var date = Calendar.getInstance();
         return new JobBuilder("CNAB_400_JOB_" + date.get(Calendar.SECOND), jobRepository)
                 .flow(masterStepCnab)
+                .next(updateSituacaoCnab())
                 .end()
                 .build();
     }
@@ -78,6 +77,18 @@ public class Cnab400Service {
                 .skipPolicy(skipPolicy)
                 .listener(cnabSkipListenner)
                 .build();
+    }
+
+    @Bean
+    Step updateSituacaoCnab() {
+        return new StepBuilder("CNAB_400_ATUALIZACAO_ARQUIVO", repository)
+                .tasklet(cnabTasklet(), platformTransactionManager)
+                .build();
+    }
+
+    @Bean
+    CnabTasklet cnabTasklet() {
+        return new CnabTasklet();
     }
 
     @Bean
@@ -182,11 +193,4 @@ public class Cnab400Service {
         return taskExecutorPartitionHandler;
     }
 
-
-
-    @AfterJob
-    public void atualizaArquivo() {
-        var cnabs = cnabRepository.findAllByIdArquivo(4L);
-        System.out.println(cnabs.toString());
-    }
 }
