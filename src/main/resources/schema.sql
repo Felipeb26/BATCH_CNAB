@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS arquivo(
 	fileSize varchar(255),
 	quantidade int,
 	situacao varchar(255),
-	arquivo blob
+	arquivo blob,
+	valorTotal decimal,
+	dataCadastro datetime
 );
 
 CREATE TABLE IF NOT EXISTS cnab_erro(
@@ -17,19 +19,8 @@ CREATE TABLE IF NOT EXISTS cnab_erro(
   	lineNumber int,
   	erro varchar(255),
   	idArquivo int,
+	dataCadastro datetime,
     foreign key (idArquivo) references arquivo(id)
-);
-
-CREATE TABLE IF NOT EXISTS transacao(
-    id SERIAL primary key,
-    tipo int,
-    data date,
-    valor decimal,
-    cpf bigint,
-    cartao varchar(255),
-    hora time,
-    donoLoja varchar(255),
-    nomeLoja varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS cnab(
@@ -72,5 +63,19 @@ CREATE TABLE IF NOT EXISTS cnab(
     segundaMensagem varchar(255),
     sequencialRegistro varchar(255),
     idArquivo int,
+    dataCadastro datetime,
     foreign key (idArquivo) references arquivo(id)
+);
+
+CREATE TABLE IF NOT EXISTS transacao(
+    id SERIAL primary key,
+    tipo int,
+    data date,
+    valor decimal,
+    cpf bigint,
+    cartao varchar(255),
+    hora time,
+    donoLoja varchar(255),
+    nomeLoja varchar(255),
+    dataCadastro datetime
 );
