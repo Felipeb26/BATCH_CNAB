@@ -1,15 +1,13 @@
 <ehcache>
     <defaultCache
-        maxEntriesLocalHeap="1000"
-        eternal="false"
-        timeToIdleSeconds="300"
-        timeToLiveSeconds="600"
-    ></defaultCache>
+            maxEntriesLocalHeap="1000"
+            eternal="false"
+            timeToIdleSeconds="300"
+            timeToLiveSeconds="600"/>
     <cache
-        name="com.batsworks.batch.domain.entity.Arquivo"
-        maxEntriesLocalHeap="1000"
-        eternal="false"
-        timeToIdleSeconds="300"
-        timeToLiveSeconds="600"
-    ></cache>
+            name="com.batsworks.batch.domain.entity.Arquivo"
+            maxEntriesLocalHeap="1000"
+            eternal="false"
+            timeToIdleSeconds="300"
+            timeToLiveSeconds="600"/>
 </ehcache>

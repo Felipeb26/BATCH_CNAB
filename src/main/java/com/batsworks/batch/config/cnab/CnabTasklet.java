@@ -1,15 +1,14 @@
 package com.batsworks.batch.config.cnab;
 
+import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.repository.CnabErroRepository;
 import com.batsworks.batch.repository.CnabRepository;
-import com.batsworks.batch.domain.enums.Status;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static java.util.Objects.isNull;
 
@@ -30,9 +29,11 @@ public class CnabTasklet implements Tasklet {
 
         var erros = cnabErroRepository.countCnabsByIdArquivo(id);
         var boletos = cnabRepository.countCnabsByIdArquivo(id);
+        var valorTotal = cnabRepository.findValorTotalByIdArquivo(id);
 
         arquivo.setSituacao(isNull(erros) ? Status.PROCESSADO_ERRO : Status.PROCESSADO_SUCESSO);
         arquivo.setQuantidade(erros + boletos);
+        arquivo.setValorTotal(valorTotal);
         arquivoRepository.save(arquivo);
         return RepeatStatus.FINISHED;
     }

@@ -3,20 +3,18 @@ package com.batsworks.batch.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 
 @Getter
 @Setter
 @Builder
-@Entity
+@Entity(name = "Cnab")
 @Table(name = "cnab")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CnabEntity implements Serializable {
-    @Id
-    private Long id;
+public class CnabEntity extends AbstractEntity<Arquivo> {
+
     private String identRegistro;
     private String agenciaDebito;
     private String digitoAgencia;

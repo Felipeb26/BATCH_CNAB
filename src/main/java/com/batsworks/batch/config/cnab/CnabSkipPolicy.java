@@ -9,6 +9,7 @@ import com.batsworks.batch.domain.entity.CnabErro;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.step.skip.SkipLimitExceededException;
 import org.springframework.batch.core.step.skip.SkipPolicy;
+import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -27,11 +28,17 @@ public class CnabSkipPolicy implements SkipPolicy {
 
     @Override
     public boolean shouldSkip(Throwable t, long skipCount) throws SkipLimitExceededException {
-        var parameters = batchParameters.getParameters();
-        var arquivo = arquivoRepository.findById((Long) parameters.get("id")).orElse(null);
+        if (t instanceof FlatFileParseException parseException) {
+            var line = startWith(parseException.getInput());
+            if (line) return true;
+        }
+
+
         if (t instanceof IllegalArgumentException) {
             log.error("AN ILLEGAL ERROR HAS HAPPEN: {}", t.getMessage());
         }
+        var parameters = batchParameters.getParameters();
+        var arquivo = arquivoRepository.findById((Long) parameters.get("id")).orElse(null);
         if (t.getCause() instanceof CnabException cnab) {
             cnabErroRepository.save(CnabErro.builder()
                     .idArquivo(arquivo)
@@ -46,5 +53,10 @@ public class CnabSkipPolicy implements SkipPolicy {
         }
         return false;
     }
+
+    private boolean startWith(String compare) {
+        return compare.startsWith("01");
+    }
+
 
 }

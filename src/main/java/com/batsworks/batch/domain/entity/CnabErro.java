@@ -2,8 +2,7 @@ package com.batsworks.batch.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.io.Serializable;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Getter
 @Setter
@@ -12,11 +11,9 @@ import java.io.Serializable;
 @Table(name = "cnab_erro")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CnabErro implements Serializable {
+@DynamicUpdate
+public class CnabErro  extends AbstractEntity<Arquivo> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     private String message;
     private String erro;
     private Long lineNumber;

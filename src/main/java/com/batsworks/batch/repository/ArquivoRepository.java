@@ -1,7 +1,7 @@
 package com.batsworks.batch.repository;
 
 import com.batsworks.batch.domain.entity.Arquivo;
-import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;

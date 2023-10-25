@@ -7,6 +7,7 @@ logging:
 
 spring:
   main:
+    allow-bean-definition-overriding: true
     banner-mode: OFF
   batch:
     jdbc:
@@ -48,9 +49,10 @@ spring:
             factory_class: jcache
         javax:
           cache:
-            missing_cache_strategy: create
-            #            uri: "file:ehcache/xml"
+#            provider: "com.batsworks.batch.config.cache.EhCacheManager"
             provider: "org.ehcache.jsr107.EhcacheCachingProvider"
+            #missing_cache_strategy: create
+#            uri: "file:ehcache/xml"
   sql:
     init:
       mode: NEVER

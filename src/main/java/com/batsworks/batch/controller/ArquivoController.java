@@ -4,6 +4,7 @@ import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.service.CnabService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ public class ArquivoController {
     private final CnabService service;
 
     @PostMapping("upload")
+    @CacheEvict("CacheManager")
     public ResponseEntity<DefaultMessage> upload(@RequestParam("file") MultipartFile file, @RequestParam("type") CnabType type) {
         return ResponseEntity.ok().body(service.uploadCnabFile(file, type));
     }
@@ -27,6 +29,6 @@ public class ArquivoController {
 
     @GetMapping("/")
     public String string(){
-        return "Hello World";
+        return service.string();
     }
 }

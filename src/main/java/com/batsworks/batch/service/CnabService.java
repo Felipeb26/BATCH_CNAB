@@ -72,7 +72,6 @@ public class CnabService {
 
     private void cnabReaderConfig(MultipartFile file) throws IOException {
         cnabReader.setLineMapper(lineMapper());
-        cnabReader.setLinesToSkip(1);
         cnabReader.setStrict(false);
         cnabReader.setSaveState(false);
         cnabReader.setName("CUSTOM_CNAB_READER");
@@ -122,4 +121,9 @@ public class CnabService {
         }
     }
 
+    public String string() {
+        var arquivo = arquivoRepository.findById(1L).orElse(null);
+        if(arquivo==null) return "dnjksçbdvfikloj";
+        return arquivo.getName();
+    }
 }
