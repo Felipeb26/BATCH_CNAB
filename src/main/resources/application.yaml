@@ -1,7 +1,7 @@
 logging:
   level:
-    sql: info
     'org.hibernate.SQL': info
+    'org.hibernate.stat': debug
     'com.h2database:h2': info
     'com.batsworks.batch.config.utils': debug
 
@@ -10,32 +10,47 @@ spring:
     banner-mode: OFF
   batch:
     jdbc:
-      initialize-schema: always
+      initialize-schema: NEVER
     job:
       enabled: false
   datasource:
-    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: SA
-    password: Felipe@2001
-#    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    username: root
-#    password:
+    #url: jdbc:sqlserver://serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+    #driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    #username: SA
+    #password: Felipe@2001
+    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password:
   jpa:
-    database-platform: org.hibernate.dialect.SQLServerDialect
+    database-platform: org.hibernate.dialect.MySQLDialect
+    #    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
-      dialect: org.hibernate.dialect.SQLServerDialect
+      #dialect: org.hibernate.dialect.SQLServerDialect
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     open-in-view: false
     show-sql: true
     properties:
+      jakarta:
+        persistence:
+          sharedCache:
+            mode: ENABLE_SELECTIVE
       hibernate:
         format_sql: false
         generate_statistics: false
         order_inserts: true
-        order_pdates: true
+        order_updates: true
+        session:
+          events:
+            log.LOG_QUERIES_SLOWER_THAN_MS: 15
+          region:
+            factory_class: jcache
+        javax:
+          cache:
+            missing_cache_strategy: create
+            #            uri: "file:ehcache/xml"
+            provider: "org.ehcache.jsr107.EhcacheCachingProvider"
   sql:
     init:
       mode: NEVER

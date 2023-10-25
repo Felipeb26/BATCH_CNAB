@@ -10,6 +10,7 @@ import com.batsworks.batch.partition.ColumnRangePartitioner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -26,14 +27,19 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.Calendar;
+import java.util.Map;
+
+import static com.batsworks.batch.config.utils.Utilities.decompressData;
 
 
 @Configuration
@@ -57,7 +63,11 @@ public class Cnab400Service {
      * Dois steps foram setados 1 master e 1 minor, o master como principal e o minor como responsavel pelo restante particionado
      **/
     @Bean
-    Step masterStepCnab(Step minorStepCnab, ItemWriter<Cnab> writerCnab) {
+    @JobScope
+    Step masterStepCnab(Step minorStepCnab, @Value("#{jobParameters}") Map<String, Object> map) {
+        var file = (String) map.get("file");
+        cnabReader().setStream(file.getBytes());
+        cnabReader().setResource(new ByteArrayResource(file.getBytes()));
         return new StepBuilder("CNAB_400_MASTER_STEP", repository)
                 .partitioner(minorStepCnab.getName(), columnRangePartitioner())
                 .partitionHandler(partitionHandler(minorStepCnab))
@@ -66,12 +76,12 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step minorStepCnab(CnabProcessor processor, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
+    Step minorStepCnab(ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Cnab>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
                 .reader(cnabReader())
-                .processor(processor)
+                .processor(processor())
                 .writer(writerCnab)
                 .faultTolerant()
                 .skipPolicy(skipPolicy)

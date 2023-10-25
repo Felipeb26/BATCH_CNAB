@@ -65,7 +65,8 @@ public class Utilities {
                 baos.write(temp, 0, size);
             }
             return baos.toByteArray();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return data;
     }
@@ -80,8 +81,9 @@ public class Utilities {
                 int count = inflater.inflate(temp);
                 baos.write(temp, 0, count);
             }
-        } catch (Exception ignored) {
-            log.error(ignored.getMessage());
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            e.printStackTrace();
         }
         return data;
     }
@@ -89,6 +91,7 @@ public class Utilities {
     public static String byteToBase64String(byte[] data) {
         return Base64.getEncoder().encodeToString(data);
     }
+
     public static byte[] stringBase64ToByte(byte[] data) {
         return Base64.getDecoder().decode(data);
     }

@@ -74,3 +74,4 @@ CREATE TABLE IF NOT EXISTS cnab(
     idArquivo int,
     foreign key (idArquivo) references arquivo(id)
 );
+CREATE INDEX name_index ON arquivo(name);

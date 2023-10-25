@@ -3,9 +3,7 @@ package com.batsworks.batch.service;
 import com.batsworks.batch.config.cnab.CnabLineMapper;
 import com.batsworks.batch.config.cnab.CnabReader;
 import com.batsworks.batch.database.repository.ArquivoRepository;
-import com.batsworks.batch.database.repository.CnabRepository;
 import com.batsworks.batch.domain.entity.Arquivo;
-import com.batsworks.batch.domain.entity.CnabEntity;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.Cnab400;
@@ -14,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.annotation.AfterJob;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
@@ -40,15 +37,16 @@ public class CnabService {
     private final JobLauncher asyncWrite;
     private final Job jobCnab;
     private final Job jobWriteCnab;
-    private final CnabReader<Cnab400> cnabReader;
+//    private final CnabReader<Cnab400> cnabReader;
 
 
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
+        Arquivo arquivo = new Arquivo();
         try {
             var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomName());
 
             var data = compressData(file.getBytes());
-            var arquivo = Arquivo.builder()
+            arquivo = Arquivo.builder()
                     .name(fileName)
                     .extension(fileType(file.getInputStream(), fileName))
                     .fileSize(String.valueOf(file.getSize()))
@@ -60,7 +58,8 @@ public class CnabService {
 
             var jobParameters = new JobParametersBuilder()
                     .addJobParameter("cnab", fileName, String.class, false)
-                    .addJobParameter("id", arquivo.getId(), Long.class, true)
+                    .addJobParameter("id", arquivo.getId(), Long.class)
+                    .addJobParameter("file", new String(file.getBytes()), String.class, false)
                     .toJobParameters();
 
             cnabReaderConfig(file);
@@ -68,18 +67,20 @@ public class CnabService {
                 jobLauncherAsync.run(jobCnab, jobParameters);
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
+            if (arquivo != null) arquivoRepository.deleteById(arquivo.getId());
             log.error(e.getMessage());
+            e.printStackTrace();
             return new DefaultMessage(e.getMessage(), Status.PROCESSADO_ERRO);
         }
     }
 
-    private void cnabReaderConfig(MultipartFile file) throws IOException {
-        cnabReader.setLineMapper(lineMapper());
-        cnabReader.setStream(file.getBytes());
-        cnabReader.setResource(file.getResource());
-        cnabReader.setStrict(false);
-        cnabReader.setLinesToSkip(1);
-        cnabReader.setName("CUSTOM_CNAB_READER");
+    private void cnabReaderConfig(MultipartFile file) {
+//        cnabReader.setLineMapper(lineMapper());
+////        cnabReader.setStream(file.getBytes());
+//        cnabReader.setResource(file.getResource());
+//        cnabReader.setStrict(false);
+//        cnabReader.setLinesToSkip(1);
+//        cnabReader.setName("CUSTOM_CNAB_READER");
     }
 
     public LineMapper<Cnab400> lineMapper() {

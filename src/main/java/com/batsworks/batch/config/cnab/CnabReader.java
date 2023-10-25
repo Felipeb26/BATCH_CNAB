@@ -10,7 +10,7 @@ import org.springframework.core.io.Resource;
 import static java.util.Objects.nonNull;
 
 public class CnabReader<T> extends FlatFileItemReader<T> {
-    private static byte[] stream;
+    private byte[] stream;
 
     @Override
     public void setResource(Resource resource) {
