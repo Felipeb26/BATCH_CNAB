@@ -5,7 +5,11 @@ logging:
     'com.h2database:h2': info
     'com.batsworks.batch.config.utils': debug
 
+
+
 spring:
+  application:
+    name: CNAB BATCH
   main:
     allow-bean-definition-overriding: true
     banner-mode: OFF
@@ -27,6 +31,8 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
     #    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
+      ddl-auto: update
+      jdbc.batch_size: 30
       #dialect: org.hibernate.dialect.SQLServerDialect
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
@@ -55,12 +61,19 @@ spring:
 #            uri: "file:ehcache/xml"
   sql:
     init:
-      mode: NEVER
+      mode: ALWAYS
   h2:
     console:
       enabled: true
 
 
-
 configuration:
   max_size: 3000
+
+documentation:
+  title: ${spring.application.name}
+  version: 1.0.1
+  url: https://www.linkedin.com/in/felipebatista-silva/
+  description: "projeto para para de batch cnab"
+  name: "Felipe Batista da Silva"
+  email: "felipeb2silva@gmail.com"
