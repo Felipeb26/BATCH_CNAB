@@ -2,7 +2,7 @@ package com.batsworks.batch.config.cnab;
 
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
-import com.batsworks.batch.database.repository.ArquivoRepository;
+import com.batsworks.batch.repository.ArquivoRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;

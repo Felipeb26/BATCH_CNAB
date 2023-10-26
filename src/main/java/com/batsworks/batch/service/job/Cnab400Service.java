@@ -1,15 +1,13 @@
 package com.batsworks.batch.service.job;
 
-import com.batsworks.batch.config.cnab.CnabProcessor;
-import com.batsworks.batch.config.cnab.CnabReader;
-import com.batsworks.batch.config.cnab.CnabSkipListenner;
-import com.batsworks.batch.config.cnab.CnabTasklet;
+import com.batsworks.batch.config.cnab.*;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.partition.ColumnRangePartitioner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -27,22 +25,21 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.Calendar;
-import java.util.Map;
 
-import static com.batsworks.batch.config.utils.Utilities.decompressData;
+import static java.util.List.of;
 
 
 @Configuration
+@EnableBatchProcessing
 @RequiredArgsConstructor
 public class Cnab400Service {
 
@@ -64,10 +61,7 @@ public class Cnab400Service {
      **/
     @Bean
     @JobScope
-    Step masterStepCnab(Step minorStepCnab, @Value("#{jobParameters}") Map<String, Object> map) {
-        var file = (String) map.get("file");
-        cnabReader().setStream(file.getBytes());
-        cnabReader().setResource(new ByteArrayResource(file.getBytes()));
+    Step masterStepCnab(Step minorStepCnab) {
         return new StepBuilder("CNAB_400_MASTER_STEP", repository)
                 .partitioner(minorStepCnab.getName(), columnRangePartitioner())
                 .partitionHandler(partitionHandler(minorStepCnab))
@@ -201,6 +195,18 @@ public class Cnab400Service {
         taskExecutorPartitionHandler.setTaskExecutor(taskExecutor());
         taskExecutorPartitionHandler.setStep(minorStepCnab);
         return taskExecutorPartitionHandler;
+    }
+
+    @Bean
+    CnabMultiResource cnabMultiResource() {
+        var cnabMultiResource = new CnabMultiResource();
+        if (cnabReader().getResource() != null) {
+            var byteArrayResources = of(cnabReader().getResource());
+            Resource[] resources = new Resource[]{};
+            byteArrayResources.toArray(resources);
+            cnabMultiResource.setResources(resources);
+        }
+        return cnabMultiResource;
     }
 
 }

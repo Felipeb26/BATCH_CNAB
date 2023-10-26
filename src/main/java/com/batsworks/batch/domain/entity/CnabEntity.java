@@ -10,7 +10,7 @@ import java.sql.Date;
 @Getter
 @Setter
 @Builder
-@Entity
+@Entity(name = "cnab")
 @Table(name = "cnab")
 @AllArgsConstructor
 @NoArgsConstructor

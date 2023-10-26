@@ -1,4 +1,4 @@
-package com.batsworks.batch.database.repository;
+package com.batsworks.batch.repository;
 
 import com.batsworks.batch.domain.entity.CnabErro;
 import org.springframework.data.jpa.repository.JpaRepository;

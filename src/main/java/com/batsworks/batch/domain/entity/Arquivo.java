@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Getter
@@ -30,6 +31,7 @@ public class Arquivo implements Serializable {
     private Status situacao;
     @Column(name = "arquivo")
     private String file;
+    private BigDecimal valorTotal;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "idArquivo")
     private Set<CnabEntity> cnab;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "idArquivo")

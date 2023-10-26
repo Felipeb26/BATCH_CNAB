@@ -2,7 +2,7 @@ package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.cnab.CnabLineMapper;
 import com.batsworks.batch.config.cnab.CnabReader;
-import com.batsworks.batch.database.repository.ArquivoRepository;
+import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
@@ -37,7 +37,7 @@ public class CnabService {
     private final JobLauncher asyncWrite;
     private final Job jobCnab;
     private final Job jobWriteCnab;
-//    private final CnabReader<Cnab400> cnabReader;
+    private final CnabReader<Cnab400> cnabReader;
 
 
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
@@ -59,7 +59,6 @@ public class CnabService {
             var jobParameters = new JobParametersBuilder()
                     .addJobParameter("cnab", fileName, String.class, false)
                     .addJobParameter("id", arquivo.getId(), Long.class)
-                    .addJobParameter("file", new String(file.getBytes()), String.class, false)
                     .toJobParameters();
 
             cnabReaderConfig(file);
@@ -74,13 +73,13 @@ public class CnabService {
         }
     }
 
-    private void cnabReaderConfig(MultipartFile file) {
-//        cnabReader.setLineMapper(lineMapper());
-////        cnabReader.setStream(file.getBytes());
-//        cnabReader.setResource(file.getResource());
-//        cnabReader.setStrict(false);
-//        cnabReader.setLinesToSkip(1);
-//        cnabReader.setName("CUSTOM_CNAB_READER");
+    private void cnabReaderConfig(MultipartFile file) throws IOException {
+        cnabReader.setLineMapper(lineMapper());
+        cnabReader.setStream(file.getBytes());
+        cnabReader.setResource(file.getResource());
+        cnabReader.setStrict(false);
+        cnabReader.setLinesToSkip(1);
+        cnabReader.setName("CUSTOM_CNAB_READER");
     }
 
     public LineMapper<Cnab400> lineMapper() {
