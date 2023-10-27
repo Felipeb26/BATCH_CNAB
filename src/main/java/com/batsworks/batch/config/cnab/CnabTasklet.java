@@ -31,7 +31,7 @@ public class CnabTasklet implements Tasklet {
         var boletos = cnabRepository.countCnabsByIdArquivo(id);
         var valorTotal = cnabRepository.findValorTotalByIdArquivo(id);
 
-        arquivo.setSituacao(nonNull(erros) ? Status.PROCESSADO_ERRO : Status.PROCESSADO_SUCESSO);
+        arquivo.setSituacao(nonNull(erros) && erros > 0 ? Status.PROCESSADO_ERRO : Status.PROCESSADO_SUCESSO);
         arquivo.setQuantidade(erros + boletos);
         arquivo.setValorTotal(valorTotal);
         arquivoRepository.save(arquivo);

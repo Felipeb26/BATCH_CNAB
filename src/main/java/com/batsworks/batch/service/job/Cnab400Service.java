@@ -9,6 +9,8 @@ import com.batsworks.batch.domain.records.Cnab400;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -25,8 +27,10 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.Resource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -37,6 +41,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
+@EnableBatchProcessing
 @RequiredArgsConstructor
 public class Cnab400Service {
 
@@ -81,9 +86,11 @@ public class Cnab400Service {
     }
 
     @Bean
-    CnabReader<Cnab400> cnabReader() {
+    @StepScope
+    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") Resource resource) {
         var cnab = new CnabReader<Cnab400>();
         cnab.setStrict(false);
+        cnab.setResource(resource);
         cnab.setName("CUSTOM_CNAB_READER");
         cnab.setLineMapper(lineMapper());
         return cnab;
@@ -161,9 +168,9 @@ public class Cnab400Service {
     @Bean
     TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(5);
-        taskExecutor.setCorePoolSize(5);
-        taskExecutor.setQueueCapacity(10);
+        taskExecutor.setMaxPoolSize(15);
+        taskExecutor.setCorePoolSize(15);
+        taskExecutor.setQueueCapacity(20);
         taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
         taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return taskExecutor;

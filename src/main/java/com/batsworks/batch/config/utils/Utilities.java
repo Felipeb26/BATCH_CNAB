@@ -7,6 +7,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -94,5 +97,10 @@ public class Utilities {
         return Base64.getDecoder().decode(data);
     }
 
+    public void transfer(String location, byte[] data){
+        Path targetPath = Path.of(location);
 
+        byte[] bytes = Files.rea(data);
+        Files.write(targetPath, bytes, StandardOpenOption.CREATE);
+    }
 }

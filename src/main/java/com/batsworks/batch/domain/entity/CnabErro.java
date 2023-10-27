@@ -2,7 +2,10 @@ package com.batsworks.batch.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.annotations.Cache;
+
 
 @Getter
 @Setter
@@ -12,6 +15,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicUpdate
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class CnabErro  extends AbstractEntity<Arquivo> {
 
     private String message;

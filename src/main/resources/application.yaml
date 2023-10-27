@@ -31,7 +31,7 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
     #    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
       jdbc.batch_size: 30
       #dialect: org.hibernate.dialect.SQLServerDialect
       naming:
@@ -55,9 +55,7 @@ spring:
             factory_class: jcache
         javax:
           cache:
-#            provider: "com.batsworks.batch.config.cache.EhCacheManager"
             provider: "org.ehcache.jsr107.EhcacheCachingProvider"
-            #missing_cache_strategy: create
 #            uri: "file:ehcache/xml"
   sql:
     init:
@@ -69,6 +67,7 @@ spring:
 
 configuration:
   max_size: 3000
+  default_folder: tmp
 
 documentation:
   title: ${spring.application.name}
