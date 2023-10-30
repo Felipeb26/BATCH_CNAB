@@ -27,6 +27,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.batch:spring-batch-integration:5.0.3'
     implementation 'org.springframework.integration:spring-integration-file:6.1.2'
+
     // Database dependencies
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.1.4'
     implementation 'com.mysql:mysql-connector-j:8.1.0'
@@ -35,6 +36,12 @@ dependencies {
     //CACHE
     implementation 'org.ehcache:ehcache:3.10.8'
     implementation 'org.hibernate.orm:hibernate-jcache:6.3.0.Final'
+
+    //OBSERVABILITY
+    implementation 'org.springframework.boot:spring-boot-starter-actuator:3.1.5'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'io.micrometer:micrometer-tracing-bridge-otel'
+    implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
 
     //SWAGGER
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'

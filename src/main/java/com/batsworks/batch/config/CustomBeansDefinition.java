@@ -2,7 +2,6 @@ package com.batsworks.batch.config;
 
 import com.batsworks.batch.config.cnab.CnabSkipListenner;
 import com.batsworks.batch.config.cnab.CnabSkipPolicy;
-import com.batsworks.batch.config.utils.BatchBeanParameters;
 import com.batsworks.batch.config.utils.BatchParameters;
 import com.batsworks.batch.config.utils.LoggingRequestInterceptor;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -43,12 +42,22 @@ public class CustomBeansDefinition {
 
     @Bean
     @StepScope
-    BatchBeanParameters parameters(@Value("#{jobParameters}") Map<String, Object> map) {
-        return new BatchBeanParameters(map);
+    public BatchParameters batchParameters(@Value("#{jobParameters}") Map<String, Object> map) {
+        return new BatchParameters(map);
     }
 
     @Bean
-    BatchParameters batchParameters() {
+    BatchParameters parameters() {
         return new BatchParameters();
+    }
+
+    @Bean
+    FileIntegrationScanFolder fileIntegrationScanFolder() {
+        return new FileIntegrationScanFolder();
+    }
+
+    @Bean
+    FileIntegrationFilter fileIntegrationFilter() {
+        return new FileIntegrationFilter();
     }
 }

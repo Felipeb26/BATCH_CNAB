@@ -5,6 +5,18 @@ logging:
     'com.h2database:h2': info
     'com.batsworks.batch.config.utils': debug
 
+management:
+  endpoint:
+    health:
+      show-details: ALWAYS
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
 
 
 spring:
@@ -56,7 +68,7 @@ spring:
         javax:
           cache:
             provider: "org.ehcache.jsr107.EhcacheCachingProvider"
-#            uri: "file:ehcache/xml"
+  #            uri: "file:ehcache/xml"
   sql:
     init:
       mode: ALWAYS

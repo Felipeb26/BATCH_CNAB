@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.integration.annotation.IntegrationComponentScan;
 import org.springframework.integration.channel.DirectChannel;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.springframework.integration.dsl.Pollers;
@@ -18,6 +19,7 @@ import org.springframework.integration.file.FileWritingMessageHandler;
 import org.springframework.integration.file.filters.SimplePatternFileListFilter;
 import org.springframework.integration.file.support.FileExistsMode;
 import org.springframework.integration.handler.LoggingHandler;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.stereotype.Component;
 
@@ -37,26 +39,35 @@ public class FileIntegration {
     private final BatchParameters parameters;
 
     @Bean
-    public IntegrationFlow integrationFlow() {
-        return IntegrationFlow.from(fileReadingMessageSource(),
-                        source -> source.poller(Pollers.fixedDelay(Duration.ofSeconds(5)).maxMessagesPerPoll(1)))
+    public IntegrationFlow integrationFlow(FileReadingMessageSource fileReadingMessageSource) {
+        return IntegrationFlow.from(fileReadingMessageSource,
+                        source -> source.poller(Pollers.fixedDelay(Duration.ofSeconds(3)).maxMessagesPerPoll(1)))
                 .channel(directChannel())
                 .handle(fileMessageHandler())
                 .transform(fileMessageJobRequest())
                 .handle(jobLaunchingGateway())
+                .channel(publishSubscribeChannel())
                 .log(LoggingHandler.Level.TRACE)
                 .get();
     }
 
+    @Bean
     public FileReadingMessageSource fileReadingMessageSource() {
         var messageSource = new FileReadingMessageSource();
         messageSource.setDirectory(new File(path));
+        messageSource.setAutoCreateDirectory(true);
         messageSource.setFilter(new SimplePatternFileListFilter("*.rem"));
         return messageSource;
     }
 
-    public DirectChannel directChannel() {
+    @Bean
+    public MessageChannel directChannel() {
         return new DirectChannel();
+    }
+
+    @Bean
+    public PublishSubscribeChannel publishSubscribeChannel() {
+        return new PublishSubscribeChannel();
     }
 
     public MessageHandler fileMessageHandler() {

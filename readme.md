@@ -46,3 +46,16 @@
 ### Transacao
 
 * Tabela criada para testar fluxo de arquivos diferentes
+
+
+<hr/>
+
+## Observability
+### Foi utilizado micrometer, spring actuator e zipkin para monitoramento e coleta de logs
+<br>
+
+```docker
+docker run -d -p 9411:9411 openzipkin/zipkin
+```
+
+<br>

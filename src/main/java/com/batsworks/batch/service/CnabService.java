@@ -1,6 +1,7 @@
 package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.utils.BatchParameters;
+import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
@@ -33,15 +34,16 @@ public class CnabService {
     private final Job jobWriteCnab;
     private final BatchParameters parameters;
     @Value("${configuration.default_folder:tmp}")
-    private String path;
+    private String tempFolderPath;
 
 
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
         try {
-            var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomName());
-            var storagePlace = Paths.get(path);
-            var targetLocation = storagePlace.resolve(fileName);
-            file.transferTo(targetLocation);
+            var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
+            var storagePlace = Paths.get(tempFolderPath);
+            var haveSaved = transferFile(file.getInputStream(), storagePlace.resolve(fileName));
+            if (Boolean.FALSE.equals(haveSaved))
+                return new DefaultMessage("Erro ao analisar arquivo %s ".formatted(fileName), Status.PROCESSADO_ERRO);
 
             var data = compressData(file.getBytes());
             var arquivo = Arquivo.builder()
@@ -52,6 +54,7 @@ public class CnabService {
                     .file(encodeByteToBASE64String(data))
                     .build();
 
+
             arquivo = arquivoRepository.save(arquivo);
 
             Map<String, Object> map = new HashMap<>();
@@ -61,20 +64,29 @@ public class CnabService {
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return new DefaultMessage(e.getMessage(), Status.PROCESSADO_ERRO);
+            return new DefaultMessage(false, e.getMessage(), Status.PROCESSADO_ERRO);
         }
     }
 
     public DefaultMessage downloadCnab() {
         try {
             var jobParameters = new JobParametersBuilder()
-                    .addJobParameter("download_cnab", randomName(), String.class, false)
+                    .addJobParameter("download_cnab", randomFileName(), String.class, false)
                     .toJobParameters();
             asyncWrite.run(jobWriteCnab, jobParameters);
             return new DefaultMessage("Download", Status.DOWNLOADING);
         } catch (Exception e) {
             log.error("log: {}", e.getMessage());
             return new DefaultMessage(e.getMessage(), Status.DOWNLOAD_ERROR);
+        }
+    }
+
+    public DefaultMessage resetTempFile() {
+        try {
+            Utilities.deleteFile(tempFolderPath);
+            return new DefaultMessage("Pasta tmp deletada com sucesso", Status.COMMON_SUCESS);
+        } catch (Exception e) {
+            return new DefaultMessage(false, "erro ao resetar pasta tmp ", Status.COMMON_ERROR);
         }
     }
 

@@ -27,6 +27,8 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.batsworks.batch.config.utils.Utilities.actualDateString;
+
 @Configuration
 @RequiredArgsConstructor
 public class GenerateCNABService {
@@ -40,7 +42,7 @@ public class GenerateCNABService {
         Map<String, Sort.Direction> map = new HashMap<>();
         map.put("id", Sort.Direction.ASC);
         return new RepositoryItemReaderBuilder<CnabEntity>()
-                .name("READER_CNAB")
+                .name("READER_CNAB"+ actualDateString())
                 .repository(cnabRepository)
                 .methodName("findAll")
                 .sorts(map)

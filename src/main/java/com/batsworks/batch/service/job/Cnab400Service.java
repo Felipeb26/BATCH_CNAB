@@ -1,9 +1,6 @@
 package com.batsworks.batch.service.job;
 
-import com.batsworks.batch.config.cnab.CnabProcessor;
-import com.batsworks.batch.config.cnab.CnabReader;
-import com.batsworks.batch.config.cnab.CnabSkipListenner;
-import com.batsworks.batch.config.cnab.CnabTasklet;
+import com.batsworks.batch.config.cnab.*;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +27,16 @@ import org.springframework.batch.item.file.transform.Range;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.util.Calendar;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static com.batsworks.batch.config.utils.Utilities.actualDateString;
 
 @Configuration
 @EnableBatchProcessing
@@ -50,8 +48,7 @@ public class Cnab400Service {
 
     @Bean
     Job jobCnab(Step step, JobRepository jobRepository) {
-        var date = Calendar.getInstance();
-        return new JobBuilder("CNAB_400_JOB_" + date.get(Calendar.SECOND), jobRepository)
+        return new JobBuilder("CNAB_400_JOB_" + actualDateString(), jobRepository)
                 .flow(step)
                 .next(updateSituacaoCnab())
                 .end()
@@ -87,10 +84,10 @@ public class Cnab400Service {
 
     @Bean
     @StepScope
-    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") Resource resource) {
+    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") String resource) {
         var cnab = new CnabReader<Cnab400>();
         cnab.setStrict(false);
-        cnab.setResource(resource);
+        cnab.setResource(new PathResource(resource));
         cnab.setName("CUSTOM_CNAB_READER");
         cnab.setLineMapper(lineMapper());
         return cnab;
@@ -118,9 +115,10 @@ public class Cnab400Service {
                 .beanMapped().build();
     }
 
+
     @Bean
     public LineMapper<Cnab400> lineMapper() {
-        DefaultLineMapper<Cnab400> lineMapper = new DefaultLineMapper<>();
+        DefaultLineMapper<Cnab400> lineMapper = new CnabLineMapper<>();
 
         FixedLengthTokenizer lineTokenizer = new FixedLengthTokenizer();
         lineTokenizer.setStrict(false);

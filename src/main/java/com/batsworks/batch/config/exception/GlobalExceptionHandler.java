@@ -7,6 +7,7 @@ import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteExcep
 import org.springframework.batch.core.step.skip.NonSkippableReadException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.MessagingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -36,4 +37,10 @@ public class GlobalExceptionHandler {
         map.put("line", cnabException.getActualLine());
         return ResponseEntity.badRequest().body(map);
     }
+
+    @ExceptionHandler(MessagingException.class)
+    private void s(MessagingException e){
+        log.error(e.getMessage());
+    }
+
 }

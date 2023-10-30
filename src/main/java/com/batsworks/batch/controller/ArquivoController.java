@@ -35,4 +35,9 @@ public class ArquivoController {
     public String string() {
         return service.string();
     }
+
+    @GetMapping
+    public Object object() {
+        return service.resetTempFile();
+    }
 }
