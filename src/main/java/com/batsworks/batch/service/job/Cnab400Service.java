@@ -1,14 +1,15 @@
 package com.batsworks.batch.service.job;
 
 import com.batsworks.batch.config.cnab.*;
+import com.batsworks.batch.config.partitioner.ColumnRangePartitioner;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
-import com.batsworks.batch.partition.ColumnRangePartitioner;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.JobScope;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
@@ -25,18 +26,17 @@ import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.PathResource;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.Calendar;
-
-import static java.util.List.of;
-
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 @EnableBatchProcessing
@@ -70,15 +70,16 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step minorStepCnab(ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
+    Step minorStepCnab(CnabReader<Cnab400> cnabReader, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Cnab>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
-                .reader(cnabReader())
+                .reader(cnabReader)
                 .processor(processor())
                 .writer(writerCnab)
                 .faultTolerant()
                 .skipPolicy(skipPolicy)
+                .listener(processor())
                 .listener(cnabSkipListenner)
                 .build();
     }
@@ -96,8 +97,12 @@ public class Cnab400Service {
     }
 
     @Bean
-    CnabReader<Cnab400> cnabReader() {
+    @StepScope
+    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") String resource) {
         var cnab = new CnabReader<Cnab400>();
+        cnab.setStrict(false);
+        cnab.setResource(new PathResource(resource));
+        cnab.setName("CUSTOM_CNAB_READER");
         cnab.setLineMapper(lineMapper());
         return cnab;
     }
@@ -115,17 +120,18 @@ public class Cnab400Service {
                         " codigoBanco, campoMulta, percentualMulta, nossoNumero, digitoConferenciaNumeroBanco,descontoDia, condicaoEmpissaoPapeladaCobranca," +
                         " boletoDebitoAutomatico,identificacaoOcorrencia, numeroDocumento,dataVencimento, valorTitulo, especieTitulo, dataEmissao, primeiraInstrucao," +
                         " segundaInstrucao, moraDia,dataLimiteDescontoConcessao, valorDesconto, valorIOF, valorAbatimento, tipoPagador, nomePagador, endereco,primeiraMensagem," +
-                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro,idArquivo) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
+                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro,idArquivo,dataCadastro) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
                         ":digitoConta,:identBeneficiario,:controleParticipante,:codigoBanco,:campoMulta,:percentualMulta,:nossoNumero,:digitoConferenciaNumeroBanco," +
                         ":descontoDia,:condicaoEmpissaoPapeladaCobranca,:boletoDebitoAutomatico,:identificacaoOcorrencia,:numeroDocumento,:dataVencimento,:valorTitulo," +
                         ":especieTitulo,:dataEmissao,:primeiraInstrucao,:segundaInstrucao,:moraDia,:dataLimiteDescontoConcessao,:valorDesconto,:valorIOF,:valorAbatimento," +
-                        ":tipoPagador,:nomePagador,:endereco,:primeiraMensagem,:cep,:sufixoCEP,:segundaMensagem,:sequencialRegistro,:arquivo.id)")
+                        ":tipoPagador,:nomePagador,:endereco,:primeiraMensagem,:cep,:sufixoCEP,:segundaMensagem,:sequencialRegistro,:arquivo.id,:dataCadastro)")
                 .beanMapped().build();
     }
 
+
     @Bean
     public LineMapper<Cnab400> lineMapper() {
-        DefaultLineMapper<Cnab400> lineMapper = new DefaultLineMapper<>();
+        DefaultLineMapper<Cnab400> lineMapper = new CnabLineMapper<>();
 
         FixedLengthTokenizer lineTokenizer = new FixedLengthTokenizer();
         lineTokenizer.setStrict(false);
@@ -173,9 +179,11 @@ public class Cnab400Service {
     @Bean
     TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(7);
-        taskExecutor.setCorePoolSize(7);
-        taskExecutor.setQueueCapacity(7);
+        taskExecutor.setMaxPoolSize(8);
+        taskExecutor.setCorePoolSize(8);
+        taskExecutor.setQueueCapacity(12);
+        taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
+        taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return taskExecutor;
     }
 
@@ -197,16 +205,16 @@ public class Cnab400Service {
         return taskExecutorPartitionHandler;
     }
 
-    @Bean
-    CnabMultiResource cnabMultiResource() {
-        var cnabMultiResource = new CnabMultiResource();
-        if (cnabReader().getResource() != null) {
-            var byteArrayResources = of(cnabReader().getResource());
-            Resource[] resources = new Resource[]{};
-            byteArrayResources.toArray(resources);
-            cnabMultiResource.setResources(resources);
-        }
-        return cnabMultiResource;
-    }
+//    @Bean
+//    CnabMultiResource cnabMultiResource() {
+//        var cnabMultiResource = new CnabMultiResource();
+//        if (cnabReader().getResource() != null) {
+//            var byteArrayResources = of(cnabReader().getResource());
+//            Resource[] resources = new Resource[]{};
+//            byteArrayResources.toArray(resources);
+//            cnabMultiResource.setResources(resources);
+//        }
+//        return cnabMultiResource;
+//    }
 
 }

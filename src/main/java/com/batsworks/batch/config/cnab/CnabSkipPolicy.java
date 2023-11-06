@@ -3,9 +3,9 @@ package com.batsworks.batch.config.cnab;
 
 import com.batsworks.batch.config.exception.CnabException;
 import com.batsworks.batch.config.utils.BatchParameters;
+import com.batsworks.batch.domain.entity.CnabErro;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.repository.CnabErroRepository;
-import com.batsworks.batch.domain.entity.CnabErro;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.step.skip.SkipLimitExceededException;
 import org.springframework.batch.core.step.skip.SkipPolicy;
@@ -31,28 +31,22 @@ public class CnabSkipPolicy implements SkipPolicy {
     @Override
     public boolean shouldSkip(Throwable t, long skipCount) throws SkipLimitExceededException {
         var parameters = batchParameters.getParameters();
+        Long id = (long) parameters.get("id");
 
         if (t instanceof FlatFileParseException parseException) {
-            var line = parseException.getInput();
-            if (line.startsWith("01REMESSA01COBRANCA")) return true;
+            var line = startWith(parseException.getInput());
+            if (line) return true;
         }
 
-        if (t instanceof IllegalArgumentException) {
-            log.error("AN ILLEGAL ERROR HAS HAPPEN: {}", t.getMessage());
-        }
-
-        if (t.getCause() instanceof IOException e) {
-            log.error(e.getMessage());
-            log.info("ARQUIVO, {}", parameters.get("id"));
+        if (t.getCause() instanceof IOException) {
+            log.error("## AN ILLEGAL ERROR HAS HAPPEN: {}, id: {}\n", t.getMessage(), id);
             return true;
         }
 
-
-        var arquivo = arquivoRepository.findById((Long) parameters.get("id")).orElse(null);
-
+        var arquivo = arquivoRepository.findById(id).orElse(null);
         if (t.getCause() instanceof CnabException cnab) {
             cnabErroRepository.save(CnabErro.builder()
-                    .idArquivo(arquivo)
+                    .arquivo(arquivo)
                     .erro(cnab.getMessage())
                     .message(cnab.getMessage().concat(" - was received: ").concat(String.valueOf(cnab.getSize())))
                     .lineNumber(cnab.getActualLine())
@@ -64,5 +58,10 @@ public class CnabSkipPolicy implements SkipPolicy {
         }
         return false;
     }
+
+    private boolean startWith(String compare) {
+        return compare.startsWith("01");
+    }
+
 
 }

@@ -8,12 +8,13 @@ import lombok.Getter;
 public enum Status {
 
     UNKNOWN(0L),
-    COMMON_ERROR(1L),
-    PROCESSANDO(2L),
-    PROCESSADO_ERRO(3L),
-    PROCESSADO_SUCESSO(4L),
-    DOWNLOADING(5L),
-    DOWNLOAD_ERROR(6L);
+    ERROR(1L),
+    SUCESS(2L),
+    PROCESSANDO(3L),
+    PROCESSADO_ERRO(4L),
+    PROCESSADO_SUCESSO(5L),
+    DOWNLOADING(6L),
+    DOWNLOAD_ERROR(7L);
 
     private final Long code;
 }

@@ -1,15 +1,16 @@
 package com.batsworks.batch.config.cnab;
 
+import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.repository.CnabErroRepository;
 import com.batsworks.batch.repository.CnabRepository;
-import com.batsworks.batch.domain.enums.Status;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static com.batsworks.batch.config.utils.Utilities.deleteFile;
 import static java.util.Objects.nonNull;
 
 public class CnabTasklet implements Tasklet {
@@ -22,7 +23,9 @@ public class CnabTasklet implements Tasklet {
 
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
-        var id = (long) chunkContext.getStepContext().getJobParameters().get("id");
+        var map = chunkContext.getStepContext().getJobParameters();
+        var id = (long) map.get("id");
+        var path = (String) map.get("path");
 
         var arquivo = arquivoRepository.findById(id).orElse(null);
         if (arquivo == null) return RepeatStatus.CONTINUABLE;
@@ -31,10 +34,14 @@ public class CnabTasklet implements Tasklet {
         var boletos = cnabRepository.countCnabsByIdArquivo(id);
         var valorTotal = cnabRepository.findValorTotalByIdArquivo(id);
 
-        arquivo.setSituacao(nonNull(erros) ? Status.PROCESSADO_ERRO : Status.PROCESSADO_SUCESSO);
+        arquivo.setSituacao(nonNull(erros) && erros > 0 ? Status.PROCESSADO_ERRO : Status.PROCESSADO_SUCESSO);
         arquivo.setQuantidade(erros + boletos);
         arquivo.setValorTotal(valorTotal);
         arquivoRepository.save(arquivo);
-        return RepeatStatus.FINISHED;
+
+        if (deleteFile(path)) {
+            return RepeatStatus.FINISHED;
+        }
+        return RepeatStatus.CONTINUABLE;
     }
 }

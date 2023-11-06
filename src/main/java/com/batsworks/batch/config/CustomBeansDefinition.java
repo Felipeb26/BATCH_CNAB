@@ -36,13 +36,19 @@ public class CustomBeansDefinition {
     }
 
     @Bean
-    CnabSkipListenner cnabSkipListenner(){
+    CnabSkipListenner cnabSkipListenner() {
         return new CnabSkipListenner();
     }
 
     @Bean
     @StepScope
-    BatchParameters parameters(@Value("#{jobParameters}") Map<String, Object> map) {
+    public BatchParameters batchParameters(@Value("#{jobParameters}") Map<String, Object> map) {
         return new BatchParameters(map);
     }
+
+    @Bean
+    BatchParameters parameters() {
+        return new BatchParameters();
+    }
+
 }

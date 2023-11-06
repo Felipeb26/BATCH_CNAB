@@ -1,15 +1,22 @@
 package com.batsworks.batch.repository;
 
 import com.batsworks.batch.domain.entity.CnabEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
-public interface CnabRepository extends JpaRepository<CnabEntity, Long> {
+public interface CnabRepository extends CrudRepository<CnabEntity, Long>, PagingAndSortingRepository<CnabEntity, Long> {
 
-    @Query("SELECT COUNT(ce) FROM cnab ce WHERE ce.idArquivo.id=?1")
+    @Query("FROM Cnab ce WHERE ce.arquivo.id=?1")
+    Optional<List<CnabEntity>> findAllByIdArquivo(Long idArquivo);
+
+    @Query("SELECT COUNT(*) FROM Cnab ce WHERE ce.arquivo.id=?1")
     Long countCnabsByIdArquivo(Long idArquivo);
-    @Query("select sum(c.valorTitulo) from cnab c where c.idArquivo.id=?1")
+
+    @Query("SELECT SUM(c.valorTitulo) FROM Cnab c WHERE c.arquivo.id=?1")
     BigDecimal findValorTotalByIdArquivo(Long idArquivo);
 }

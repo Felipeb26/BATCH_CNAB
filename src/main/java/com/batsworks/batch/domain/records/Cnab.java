@@ -6,6 +6,7 @@ import com.batsworks.batch.domain.entity.Arquivo;
 import java.math.BigDecimal;
 import java.sql.Date;
 import java.text.ParseException;
+import java.time.LocalDateTime;
 
 import static com.batsworks.batch.config.utils.Utilities.parseDate;
 
@@ -48,7 +49,8 @@ public record Cnab(
         String sufixoCEP,
         String segundaMensagem,
         String sequencialRegistro,
-        Arquivo arquivo) {
+        Arquivo arquivo,
+        LocalDateTime dataCadastro) {
 
     public Cnab withDates(String dataVencimento, String dataEmissao, String dataLimiteDescontoConcessao) throws ParseException {
         var dataLimiteDescontoConcessa = parseDate(dataLimiteDescontoConcessao);
@@ -60,16 +62,8 @@ public record Cnab(
                 digitoConferenciaNumeroBanco, descontoDia, condicaoEmpissaoPapeladaCobranca, boletoDebitoAutomatico,
                 identificacaoOcorrencia, numeroDocumento, dataVenciment, valorTitulo, especieTitulo, dataEmissa,
                 primeiraInstrucao, segundaInstrucao, moraDia, dataLimiteDescontoConcessa, valorDesconto, valorIOF,
-                valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem, sequencialRegistro, arquivo);
-    }
-
-    public Cnab withArquivo(Arquivo arquivoNovo){
-        return new Cnab(id, identRegistro, agenciaDebito, digitoAgencia, razaoAgencia, contaCorrente, digitoConta,
-                identBeneficiario, controleParticipante, codigoBanco, campoMulta, percentualMulta, nossoNumero,
-                digitoConferenciaNumeroBanco, descontoDia, condicaoEmpissaoPapeladaCobranca, boletoDebitoAutomatico,
-                identificacaoOcorrencia, numeroDocumento, dataVencimento, valorTitulo, especieTitulo, dataEmissao,
-                primeiraInstrucao, segundaInstrucao, moraDia, dataLimiteDescontoConcessao, valorDesconto, valorIOF,
-                valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem, sequencialRegistro, arquivoNovo);
+                valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem,
+                sequencialRegistro, arquivo, dataCadastro);
     }
 
 }

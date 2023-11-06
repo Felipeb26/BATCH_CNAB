@@ -1,9 +1,13 @@
 package com.batsworks.batch.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.cache.annotation.Cacheable;
 
-import java.io.Serializable;
 
 @Getter
 @Setter
@@ -12,17 +16,18 @@ import java.io.Serializable;
 @Table(name = "cnab_erro")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CnabErro implements Serializable {
+@DynamicUpdate
+@Cacheable(value = {"EntityCache"})
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class CnabErro extends AbstractEntity<Arquivo> {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
     private String message;
     private String erro;
     private Long lineNumber;
     private String line;
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idArquivo")
-    private Arquivo idArquivo;
+    @JoinColumn(name = "idArquivo", nullable = false)
+    private Arquivo arquivo;
 
 }

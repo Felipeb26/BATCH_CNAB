@@ -1,126 +1,102 @@
 package com.batsworks.batch.service;
 
-import com.batsworks.batch.config.cnab.CnabLineMapper;
-import com.batsworks.batch.config.cnab.CnabReader;
-import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.config.exception.BussinesException;
+import com.batsworks.batch.config.utils.BatchParameters;
+import com.batsworks.batch.config.utils.Compress;
+import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
-import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.domain.records.DefaultMessage;
+import com.batsworks.batch.repository.ArquivoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.batch.item.file.LineMapper;
-import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
-import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
-import org.springframework.batch.item.file.transform.Range;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.batsworks.batch.config.utils.Utilities.*;
-import static java.util.Objects.nonNull;
+import static java.util.Objects.isNull;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CnabService {
 
+    private final Compress compress;
     private final ArquivoRepository arquivoRepository;
-    private final JobLauncher jobLauncherAsync;
     private final JobLauncher asyncWrite;
-    private final Job jobCnab;
     private final Job jobWriteCnab;
-    private final CnabReader<Cnab400> cnabReader;
+    private final BatchParameters parameters;
+    @Value("${configuration.default_folder:tmp}")
+    private String tempFolderPath;
 
 
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
-        Arquivo arquivo = new Arquivo();
         try {
-            var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomName());
+            var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
+            var storagePlace = Paths.get(tempFolderPath);
+            var haveSaved = transferFile(file.getInputStream(), storagePlace.resolve(fileName));
+            if (Boolean.FALSE.equals(haveSaved))
+                throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
 
-            var data = compressData(file.getBytes());
-            arquivo = Arquivo.builder()
-                    .name(fileName)
+            var data = compressData(file.getBytes(), fileName);
+            var arquivo = Arquivo.builder()
+                    .name(fileName + "\t" + data.length)
                     .extension(fileType(file.getInputStream(), fileName))
                     .fileSize(String.valueOf(file.getSize()))
                     .situacao(Status.PROCESSANDO)
-                    .file(byteToBase64String(data))
+                    .file(encodeByteToBASE64String(data))
                     .build();
 
-            arquivo = arquivoRepository.saveAndFlush(arquivo);
 
-            var jobParameters = new JobParametersBuilder()
-                    .addJobParameter("cnab", fileName, String.class, false)
-                    .addJobParameter("id", arquivo.getId(), Long.class)
-                    .toJobParameters();
+            arquivo = arquivoRepository.save(arquivo);
 
-            cnabReaderConfig(file);
-            if (tipo.equals(CnabType.CNAB400))
-                jobLauncherAsync.run(jobCnab, jobParameters);
+            Map<String, Object> map = new HashMap<>();
+            map.put("id", arquivo.getId());
+
+            parameters.setParameters(map);
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
-            if (arquivo != null) arquivoRepository.deleteById(arquivo.getId());
             log.error(e.getMessage());
-            e.printStackTrace();
-            return new DefaultMessage(e.getMessage(), Status.PROCESSADO_ERRO);
+            throw new BussinesException(BAD_REQUEST, e.getMessage(), new Object[]{Status.PROCESSADO_ERRO});
         }
     }
 
-    private void cnabReaderConfig(MultipartFile file) throws IOException {
-        cnabReader.setLineMapper(lineMapper());
-        cnabReader.setStream(file.getBytes());
-        cnabReader.setResource(file.getResource());
-        cnabReader.setStrict(false);
-        cnabReader.setLinesToSkip(1);
-        cnabReader.setName("CUSTOM_CNAB_READER");
-    }
-
-    public LineMapper<Cnab400> lineMapper() {
-        DefaultLineMapper<Cnab400> lineMapper = new CnabLineMapper<>();
-
-        FixedLengthTokenizer lineTokenizer = new FixedLengthTokenizer();
-        lineTokenizer.setStrict(false);
-        lineTokenizer.setNames("identRegistro", "agenciaDebito", "digitoAgencia", "razaoAgencia", "contaCorrente", "digitoConta",
-                "identBeneficiario", "controleParticipante", "codigoBanco", "campoMulta", "percentualMulta",
-                "nossoNumero", "digitoConferenciaNumeroBanco", "descontoDia", "condicaoEmpissaoPapeladaCobranca",
-                "boletoDebitoAutomatico", "identificacaoOcorrencia", "numeroDocumento", "dataVencimento", "valorTitulo",
-                "especieTitulo", "dataEmissao", "primeiraInstrucao", "segundaInstrucao", "moraDia", "dataLimiteDescontoConcessao",
-                "valorDesconto", "valorIOF", "valorAbatimento", "tipoPagador", "nomePagador", "endereco", "primeiraMensagem",
-                "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro");
-
-        lineTokenizer.setColumns(new Range(1, 1), new Range(2, 6), new Range(7, 7), new Range(8, 12), new Range(13, 19),
-                new Range(20, 20), new Range(21, 37), new Range(38, 52), new Range(63, 65), new Range(66, 66),
-                new Range(67, 70), new Range(71, 81), new Range(82, 82), new Range(83, 92), new Range(93, 93),
-                new Range(94, 94), new Range(109, 110), new Range(111, 120), new Range(121, 126), new Range(127, 139),
-                new Range(148, 149), new Range(151, 156), new Range(157, 158), new Range(159, 160), new Range(161, 173),
-                new Range(174, 179), new Range(180, 192), new Range(193, 205), new Range(206, 218), new Range(219, 220),
-                new Range(235, 274), new Range(275, 314), new Range(315, 326), new Range(327, 331), new Range(332, 334),
-                new Range(335, 394), new Range(395, 400));
-
-        lineMapper.setFieldSetMapper(new RecordFieldSetMapper<>(Cnab400.class));
-        lineMapper.setLineTokenizer(lineTokenizer);
-
-        return lineMapper;
-    }
-
-    public DefaultMessage downloadCnab() {
+    public byte[] downloadCnab(Boolean retorno, Long idArquivo) {
         try {
             var jobParameters = new JobParametersBuilder()
-                    .addJobParameter("download_cnab", randomName(), String.class, false)
+                    .addJobParameter("download_cnab", randomFileName(), String.class, false)
                     .toJobParameters();
             asyncWrite.run(jobWriteCnab, jobParameters);
-            return new DefaultMessage("Download", Status.DOWNLOADING);
+            return null;
         } catch (Exception e) {
             log.error("log: {}", e.getMessage());
-            return new DefaultMessage(e.getMessage(), Status.DOWNLOAD_ERROR);
+            throw new BussinesException(BAD_REQUEST, e.getMessage(), new Object[]{Status.DOWNLOAD_ERROR});
         }
     }
 
+    public String resetTempFile() {
+        try {
+            Utilities.deleteFile(tempFolderPath);
+            return "Pasta tmp deletada com sucesso";
+        } catch (Exception e) {
+            throw new BussinesException(BAD_REQUEST, "erro ao resetar pasta tmp ", new Object[]{Status.ERROR});
+        }
+    }
+
+    public String string() {
+        var arquivo = arquivoRepository.findById(1L).orElse(null);
+        if (arquivo == null) return "dnjksçbdvfikloj";
+        return arquivo.getName();
+    }
 }
