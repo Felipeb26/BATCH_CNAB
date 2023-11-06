@@ -51,13 +51,4 @@ public class CustomBeansDefinition {
         return new BatchParameters();
     }
 
-    @Bean
-    FileIntegrationScanFolder fileIntegrationScanFolder() {
-        return new FileIntegrationScanFolder();
-    }
-
-    @Bean
-    FileIntegrationFilter fileIntegrationFilter() {
-        return new FileIntegrationFilter();
-    }
 }

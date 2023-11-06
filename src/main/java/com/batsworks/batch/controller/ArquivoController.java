@@ -1,5 +1,6 @@
 package com.batsworks.batch.controller;
 
+import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.service.CnabService;
@@ -26,9 +27,16 @@ public class ArquivoController {
     }
 
     @GetMapping("download")
-    public ResponseEntity<DefaultMessage> download(@RequestParam(value = "retorno", defaultValue = "true") Boolean retorno,
-                                                   @RequestParam(value = "arquivo", required = false) Long idArquivo) {
-        return ResponseEntity.ok(service.downloadCnab());
+    public ResponseEntity<Object> download(@RequestParam(value = "retorno", defaultValue = "true") Boolean retorno,
+                                           @RequestParam(value = "arquivo") Long idArquivo) {
+        var response = service.downloadCnab(retorno, idArquivo);
+
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=%s".formatted(Utilities.randomFileName()))
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .contentLength(response.length)
+                .body(response);
     }
 
     @GetMapping("/")
@@ -36,7 +44,7 @@ public class ArquivoController {
         return service.string();
     }
 
-    @GetMapping
+    @GetMapping("/reset")
     public Object object() {
         return service.resetTempFile();
     }

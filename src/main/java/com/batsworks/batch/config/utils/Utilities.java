@@ -17,14 +17,14 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.stream.Stream;
-import java.util.zip.Deflater;
-import java.util.zip.Inflater;
+import java.util.zip.*;
 
 import static java.util.Objects.isNull;
 
 @Slf4j
 @UtilityClass
 public class Utilities {
+    private static final int BUFFER = 1048576;
 
     public static String randomFileName() {
         return UUID.randomUUID() + ".rem";
@@ -62,39 +62,45 @@ public class Utilities {
         return mimetype;
     }
 
-    public static byte[] compressData(byte[] data) {
-        Deflater deflater = new Deflater();
-        deflater.setLevel(Deflater.BEST_COMPRESSION);
-        deflater.setInput(data);
-        deflater.finish();
-
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length)) {
-            byte[] temp = new byte[8 * 1024];
-            while (!deflater.finished()) {
-                int size = deflater.deflate(temp);
-                baos.write(temp, 0, size);
-            }
+    public static byte[] compressData(byte[] data, String fileName) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ZipOutputStream outputStream = new ZipOutputStream(baos)
+        ) {
+            ZipEntry zipEntry = new ZipEntry(fileName);
+            outputStream.putNextEntry(zipEntry);
+            outputStream.write(data);
+            outputStream.closeEntry();
             return baos.toByteArray();
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return data;
     }
 
     public static byte[] decompressData(byte[] data) {
-        Inflater inflater = new Inflater();
-        inflater.setInput(data);
+        try (ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(data));
+             ByteArrayOutputStream baos = new ByteArrayOutputStream(BUFFER)) {
 
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream(data.length)) {
-            byte[] temp = new byte[8 * 1024];
-            while (!inflater.finished()) {
-                int count = inflater.inflate(temp);
-                baos.write(temp, 0, count);
+            String fileName = null;
+            ZipEntry entry;
+            while ((entry = zipInputStream.getNextEntry()) != null) {
+                fileName = entry.getName();
+                log.info("ARQUIVO {} sendo descompactado", fileName);
+                byte[] buffer = new byte[BUFFER];
+
+                int size;
+                while ((size = zipInputStream.read(buffer, 0, buffer.length)) != -1) {
+                    baos.write(buffer, 0, size);
+                }
             }
+            zipInputStream.closeEntry();
+
+            log.info("ARQUIVO {} descompactado", fileName);
             return baos.toByteArray();
         } catch (Exception e) {
             log.error(e.getMessage());
+            return new byte[0];
         }
-        return data;
     }
 
     public static String encodeByteToBASE64String(byte[] data) {
@@ -141,12 +147,10 @@ public class Utilities {
                 Files.deleteIfExists(path);
             if (o instanceof File file)
                 Files.deleteIfExists(file.toPath());
+        } catch (DirectoryNotEmptyException e) {
+            return deleteNotEmptyFolder(o);
         } catch (Exception e) {
-            if (e instanceof DirectoryNotEmptyException) {
-                return deleteNotEmptyFolder(o);
-            } else {
-                log.warn("An error has happen {}", e.getMessage(), new RuntimeException(e.getMessage()));
-            }
+            log.warn("An error has happen {}", e.getMessage(), new RuntimeException(e.getMessage()));
             return false;
         }
         return true;

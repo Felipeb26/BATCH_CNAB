@@ -17,6 +17,9 @@ management:
     enabled: true
     sampling:
       probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_HTTP}://${ZIPKIN_HOST}:${ZIPKIN_PORT}/api/v2/spans
 
 
 spring:
@@ -75,7 +78,6 @@ spring:
   h2:
     console:
       enabled: true
-
 
 configuration:
   max_size: 3000

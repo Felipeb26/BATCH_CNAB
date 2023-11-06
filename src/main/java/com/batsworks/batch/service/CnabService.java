@@ -1,6 +1,9 @@
 package com.batsworks.batch.service;
 
+import com.batsworks.batch.config.exception.BussinesException;
+import com.batsworks.batch.config.utils.AsyncFunctions;
 import com.batsworks.batch.config.utils.BatchParameters;
+import com.batsworks.batch.config.utils.Compress;
 import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
@@ -10,7 +13,6 @@ import com.batsworks.batch.repository.ArquivoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,15 +22,18 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.batsworks.batch.config.utils.Utilities.*;
 import static java.util.Objects.isNull;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CnabService {
 
+    private final Compress compress;
     private final ArquivoRepository arquivoRepository;
     private final JobLauncher asyncWrite;
     private final Job jobWriteCnab;
@@ -43,11 +48,11 @@ public class CnabService {
             var storagePlace = Paths.get(tempFolderPath);
             var haveSaved = transferFile(file.getInputStream(), storagePlace.resolve(fileName));
             if (Boolean.FALSE.equals(haveSaved))
-                return new DefaultMessage("Erro ao analisar arquivo %s ".formatted(fileName), Status.PROCESSADO_ERRO);
+                throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
 
-            var data = compressData(file.getBytes());
+            var data = compressData(file.getBytes(), fileName);
             var arquivo = Arquivo.builder()
-                    .name(fileName)
+                    .name(fileName + "\t" + data.length)
                     .extension(fileType(file.getInputStream(), fileName))
                     .fileSize(String.valueOf(file.getSize()))
                     .situacao(Status.PROCESSANDO)
@@ -64,29 +69,45 @@ public class CnabService {
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());
-            return new DefaultMessage(false, e.getMessage(), Status.PROCESSADO_ERRO);
+            throw new BussinesException(BAD_REQUEST, e.getMessage(), new Object[]{Status.PROCESSADO_ERRO});
         }
     }
 
-    public DefaultMessage downloadCnab() {
+    public byte[] downloadCnab(Boolean retorno, Long idArquivo) {
         try {
-            var jobParameters = new JobParametersBuilder()
-                    .addJobParameter("download_cnab", randomFileName(), String.class, false)
-                    .toJobParameters();
-            asyncWrite.run(jobWriteCnab, jobParameters);
-            return new DefaultMessage("Download", Status.DOWNLOADING);
+            AsyncFunctions<byte[], byte[]> asyncFunctions = new AsyncFunctions<>();
+
+            Optional<String> optionalString = arquivoRepository.findArquivoById(idArquivo);
+            if (optionalString.isEmpty())
+                throw new BussinesException(BAD_REQUEST, "Arquivo não encontrado", new Object[]{Status.DOWNLOAD_ERROR});
+
+            var arquivo = optionalString.get();
+            var bytes = Utilities.decodeBASE64(arquivo.getBytes());
+//            var descompressData = asyncFunctions.object(Compress::decompressData, bytes);
+
+//            var jobParameters = new JobParametersBuilder()
+//                    .addJobParameter("download_cnab", randomFileName(), String.class, false)
+//                    .toJobParameters();
+//            asyncWrite.run(jobWriteCnab, jobParameters);
+//            var data = descompressData.get();
+            var data = compress.decompressData(bytes);
+            if (data.length == 0) {
+                throw new BussinesException(BAD_REQUEST, "An error has happen while unzipping the file!", new Object[]{Status.DOWNLOAD_ERROR});
+            }
+            return data;
+//            return descompressData.get();
         } catch (Exception e) {
             log.error("log: {}", e.getMessage());
-            return new DefaultMessage(e.getMessage(), Status.DOWNLOAD_ERROR);
+            throw new BussinesException(BAD_REQUEST, e.getMessage(), new Object[]{Status.DOWNLOAD_ERROR});
         }
     }
 
-    public DefaultMessage resetTempFile() {
+    public String resetTempFile() {
         try {
             Utilities.deleteFile(tempFolderPath);
-            return new DefaultMessage("Pasta tmp deletada com sucesso", Status.COMMON_SUCESS);
+            return "Pasta tmp deletada com sucesso";
         } catch (Exception e) {
-            return new DefaultMessage(false, "erro ao resetar pasta tmp ", Status.COMMON_ERROR);
+            throw new BussinesException(BAD_REQUEST, "erro ao resetar pasta tmp ", new Object[]{Status.ERROR});
         }
     }
 

@@ -46,7 +46,7 @@ public class CnabSkipPolicy implements SkipPolicy {
         var arquivo = arquivoRepository.findById(id).orElse(null);
         if (t.getCause() instanceof CnabException cnab) {
             cnabErroRepository.save(CnabErro.builder()
-                    .idArquivo(arquivo)
+                    .arquivo(arquivo)
                     .erro(cnab.getMessage())
                     .message(cnab.getMessage().concat(" - was received: ").concat(String.valueOf(cnab.getSize())))
                     .lineNumber(cnab.getActualLine())

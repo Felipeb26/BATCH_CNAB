@@ -54,5 +54,5 @@ public class CnabEntity extends AbstractEntity<Arquivo> {
     private String sequencialRegistro;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idArquivo")
-    private Arquivo idArquivo;
+    private Arquivo arquivo;
 }

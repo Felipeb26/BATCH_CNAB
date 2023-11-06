@@ -1,10 +1,12 @@
 package com.batsworks.batch.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.Cache;
+import org.springframework.cache.annotation.Cacheable;
 
 
 @Getter
@@ -15,15 +17,17 @@ import org.hibernate.annotations.Cache;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicUpdate
-@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class CnabErro  extends AbstractEntity<Arquivo> {
+@Cacheable(value = {"EntityCache"})
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+public class CnabErro extends AbstractEntity<Arquivo> {
 
     private String message;
     private String erro;
     private Long lineNumber;
     private String line;
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idArquivo")
-    private Arquivo idArquivo;
+    @JoinColumn(name = "idArquivo", nullable = false)
+    private Arquivo arquivo;
 
 }

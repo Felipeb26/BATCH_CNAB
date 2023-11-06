@@ -61,5 +61,3 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
-
-//		> Task :prepareKotlinBuildScriptModel UP-TO-DATE

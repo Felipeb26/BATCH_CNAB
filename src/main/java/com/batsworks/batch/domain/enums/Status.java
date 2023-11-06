@@ -8,8 +8,8 @@ import lombok.Getter;
 public enum Status {
 
     UNKNOWN(0L),
-    COMMON_ERROR(1L),
-    COMMON_SUCESS(2L),
+    ERROR(1L),
+    SUCESS(2L),
     PROCESSANDO(3L),
     PROCESSADO_ERRO(4L),
     PROCESSADO_SUCESSO(5L),

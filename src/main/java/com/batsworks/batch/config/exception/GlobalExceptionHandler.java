@@ -2,15 +2,17 @@ package com.batsworks.batch.config.exception;
 
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.DefaultMessage;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.repository.JobInstanceAlreadyCompleteException;
 import org.springframework.batch.core.step.skip.NonSkippableReadException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.MessagingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +23,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(JobInstanceAlreadyCompleteException.class)
     private ResponseEntity<Object> hanfleFileAlreadyImported(JobInstanceAlreadyCompleteException exception) {
         log.error("ERROR FOUND: {}", exception.getMessage());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new DefaultMessage("Arquivo infomado já importado", Status.COMMON_ERROR));
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new DefaultMessage("Arquivo infomado já importado", Status.ERROR));
     }
 
     @ExceptionHandler(NonSkippableReadException.class)
@@ -38,9 +40,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(map);
     }
 
-    @ExceptionHandler(MessagingException.class)
-    private void s(MessagingException e){
-        log.error(e.getMessage());
+    @ExceptionHandler(BussinesException.class)
+    private ResponseEntity<Object> response(BussinesException bussinesException, HttpServletRequest httpServletRequest) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:ss");
+        return new ResponseEntity<>(BussinesExceptionEntity.builder()
+                .error(bussinesException.getMessage())
+                .arguments(bussinesException.getArgs())
+                .time(LocalDateTime.now().format(formatter))
+                .path(httpServletRequest.getServletPath())
+                .build(), bussinesException.getStatusCode());
     }
-
 }
