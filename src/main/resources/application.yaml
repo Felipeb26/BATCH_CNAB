@@ -4,6 +4,7 @@ logging:
     'org.hibernate.stat': debug
     'com.h2database:h2': info
     'com.batsworks.batch.config.utils': debug
+    'com.batsworks.batch': debug
 
 management:
   endpoint:
@@ -38,7 +39,7 @@ spring:
     #driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     #username: SA
     #password: Felipe@2001
-    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    url: jdbc:mysql://localhost:33061/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
     password:

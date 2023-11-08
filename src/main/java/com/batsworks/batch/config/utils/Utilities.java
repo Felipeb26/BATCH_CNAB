@@ -17,7 +17,9 @@ import java.util.Calendar;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.stream.Stream;
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import static java.util.Objects.isNull;
 
@@ -126,7 +128,7 @@ public class Utilities {
 
     public static Boolean transferFile(InputStream inputStream, Path target) {
         try (BufferedInputStream bis = new BufferedInputStream(inputStream);
-             OutputStream os = new FileOutputStream(target.toString())) {
+             OutputStream os = new FileOutputStream(target.toString().toLowerCase())) {
             byte[] buffer = new byte[1048576];
             int read;
             while ((read = bis.read(buffer, 0, buffer.length)) != -1) {
@@ -134,7 +136,7 @@ public class Utilities {
             }
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
             return false;
         }
     }

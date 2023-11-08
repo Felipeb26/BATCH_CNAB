@@ -26,6 +26,7 @@ import java.util.Optional;
 
 import static com.batsworks.batch.config.utils.Utilities.*;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Slf4j
@@ -44,9 +45,10 @@ public class CnabService {
 
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
         try {
-            var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
+            var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
             var storagePlace = Paths.get(tempFolderPath);
             var haveSaved = transferFile(file.getInputStream(), storagePlace.resolve(fileName));
+
             if (Boolean.FALSE.equals(haveSaved))
                 throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
 

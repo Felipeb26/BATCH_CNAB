@@ -49,8 +49,8 @@ public class Cnab400Service {
     @Bean
     Job jobCnab(Step step, JobRepository jobRepository) {
         return new JobBuilder("CNAB_400_JOB_" + actualDateString(), jobRepository)
-                .flow(step).on("")
-                .to(updateSituacaoCnab())
+                .flow(step)
+                .next(updateSituacaoCnab())
                 .end()
                 .build();
     }
