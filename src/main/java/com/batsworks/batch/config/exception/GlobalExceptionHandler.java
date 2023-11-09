@@ -16,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.batsworks.batch.config.utils.Utilities.deleteFile;
+
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -43,6 +45,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BussinesException.class)
     private ResponseEntity<Object> response(BussinesException bussinesException, HttpServletRequest httpServletRequest) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:ss");
+        deleteFile(System.getProperty("user.dir").concat("/tmp"));
         return new ResponseEntity<>(BussinesExceptionEntity.builder()
                 .error(bussinesException.getMessage())
                 .arguments(bussinesException.getArgs())

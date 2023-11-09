@@ -2,6 +2,7 @@ package com.batsworks.batch.config.utils;
 
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -26,7 +27,18 @@ import static java.util.Objects.isNull;
 @Slf4j
 @UtilityClass
 public class Utilities {
+
+    @Value("${configuration.code_prefix}")
+    private String prefix;
     private static final int BUFFER = 1048576;
+
+    public static String resolveFileName(String file, Boolean findCode) {
+        var index = file.lastIndexOf(isNull(prefix) ? "_" : prefix);
+        if (findCode) {
+            return file.substring(index + 1);
+        }
+        return file.substring(0, index - 3);
+    }
 
     public static String randomFileName() {
         return UUID.randomUUID() + ".rem";
@@ -143,12 +155,17 @@ public class Utilities {
 
     public static Boolean deleteFile(Object o) {
         try {
-            if (o instanceof String stringFilePath)
-                Files.deleteIfExists(Paths.get(stringFilePath));
-            if (o instanceof Path path)
-                Files.deleteIfExists(path);
-            if (o instanceof File file)
-                Files.deleteIfExists(file.toPath());
+            if (o instanceof String stringFilePath) {
+                var file = new File(Paths.get(stringFilePath).toString());
+                return file.isDirectory() ? deleteNotEmptyFolder(o) : Files.deleteIfExists(file.toPath());
+            }
+            if (o instanceof Path path) {
+                var file = new File(path.toString());
+                return file.isDirectory() ? deleteNotEmptyFolder(o) : Files.deleteIfExists(file.toPath());
+            }
+            if (o instanceof File file) {
+                return file.isDirectory() ? deleteNotEmptyFolder(o) : Files.deleteIfExists(file.toPath());
+            }
         } catch (DirectoryNotEmptyException e) {
             return deleteNotEmptyFolder(o);
         } catch (Exception e) {

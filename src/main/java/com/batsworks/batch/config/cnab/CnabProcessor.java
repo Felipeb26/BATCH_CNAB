@@ -12,17 +12,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
+import static com.batsworks.batch.config.utils.Utilities.resolveFileName;
 import static java.util.Objects.isNull;
 
 @Slf4j
 public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
+
     @Autowired
     private ArquivoRepository arquivoRepository;
     private Long id;
 
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
-        id = stepExecution.getJobParameters().getLong("id");
+        String path = stepExecution.getJobParameters().getString("path");
+        String value = resolveFileName(path, true);
+        id = Long.valueOf(value);
     }
 
     @Override

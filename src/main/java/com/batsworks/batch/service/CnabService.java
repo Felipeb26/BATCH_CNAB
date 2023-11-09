@@ -44,8 +44,9 @@ public class CnabService {
 
 
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
+        Arquivo arquivo = new Arquivo();
         try {
-            var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
+            var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
             var storagePlace = Paths.get(tempFolderPath);
             var haveSaved = transferFile(file.getInputStream(), storagePlace.resolve(fileName));
 
@@ -53,8 +54,8 @@ public class CnabService {
                 throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
 
             var data = compressData(file.getBytes(), fileName);
-            var arquivo = Arquivo.builder()
-                    .name(fileName + "\t" + data.length)
+            arquivo = Arquivo.builder()
+                    .name(fileName)
                     .extension(fileType(file.getInputStream(), fileName))
                     .fileSize(String.valueOf(file.getSize()))
                     .situacao(Status.PROCESSANDO)
@@ -71,6 +72,9 @@ public class CnabService {
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());
+            arquivo.setSituacao(Status.PROCESSADO_ERRO);
+            arquivo.setObservacao(e.getMessage());
+            arquivoRepository.save(arquivo);
             throw new BussinesException(BAD_REQUEST, e.getMessage(), new Object[]{Status.PROCESSADO_ERRO});
         }
     }

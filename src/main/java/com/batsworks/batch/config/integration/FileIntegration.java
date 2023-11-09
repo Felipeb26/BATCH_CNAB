@@ -41,7 +41,7 @@ public class FileIntegration {
     @Bean
     public IntegrationFlow integrationFlow(FileReadingMessageSource fileReadingMessageSource) {
         return IntegrationFlow.from(fileReadingMessageSource,
-                        source -> source.poller(Pollers.fixedDelay(Duration.ofSeconds(5)).maxMessagesPerPoll(1)))
+                        source -> source.poller(Pollers.fixedDelay(Duration.ofSeconds(10)).maxMessagesPerPoll(1)))
                 .channel(directChannel())
                 .handle(fileMessageHandler())
                 .transform(fileMessageJobRequest())

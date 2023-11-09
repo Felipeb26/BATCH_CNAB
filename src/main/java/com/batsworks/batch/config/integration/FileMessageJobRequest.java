@@ -26,9 +26,11 @@ public class FileMessageJobRequest {
     public JobLaunchRequest jobLaunchRequest(Message<File> fileMessage) {
         jobParameters = new JobParametersBuilder();
         var parameter = parameters.getParameters();
+        var id = (long) parameter.get("id");
 
-        jobParameters.addJobParameter("id", (long) parameter.get("id"), Long.class);
-        jobParameters.addJobParameter(fileName, fileMessage.getPayload().getAbsolutePath(), String.class);
+        var payload = fileMessage.getPayload();
+        jobParameters.addJobParameter("id", id, Long.class);
+        jobParameters.addJobParameter(fileName, payload.getAbsolutePath().concat("_id_") + id, String.class);
         return new JobLaunchRequest(job, jobParameters.toJobParameters());
     }
 

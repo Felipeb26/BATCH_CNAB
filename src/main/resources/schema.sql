@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS arquivo(
 	situacao varchar(255),
 	arquivo blob,
 	valorTotal decimal,
+	observacao varchar(255),
 	dataCadastro datetime
 );
 
@@ -79,3 +80,4 @@ CREATE TABLE IF NOT EXISTS transacao(
     nomeLoja varchar(255),
     dataCadastro datetime
 );
+ALTER TABLE arquivo ADD observacao NULL;

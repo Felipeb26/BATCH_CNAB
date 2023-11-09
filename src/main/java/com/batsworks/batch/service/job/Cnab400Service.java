@@ -37,6 +37,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import static com.batsworks.batch.config.utils.Utilities.actualDateString;
+import static com.batsworks.batch.config.utils.Utilities.resolveFileName;
 
 @Configuration
 @EnableBatchProcessing
@@ -85,6 +86,7 @@ public class Cnab400Service {
     @Bean
     @StepScope
     CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") String resource) {
+        resource = resolveFileName(resource, false);
         var cnab = new CnabReader<Cnab400>();
         cnab.setStrict(false);
         cnab.setResource(new PathResource(resource));

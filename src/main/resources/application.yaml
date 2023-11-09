@@ -39,10 +39,10 @@ spring:
     #driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     #username: SA
     #password: Felipe@2001
-    url: jdbc:mysql://localhost:33061/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    url: jdbc:mysql://172.23.155.68:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password:
+    username: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     #    database-platform: org.hibernate.dialect.SQLServerDialect
@@ -75,7 +75,7 @@ spring:
   #            uri: "file:ehcache/xml"
   sql:
     init:
-      mode: ALWAYS
+      mode: NEVER
   h2:
     console:
       enabled: true
@@ -83,6 +83,7 @@ spring:
 configuration:
   max_size: 3000
   default_folder: tmp
+  code_prefix: _
 
 documentation:
   title: ${spring.application.name}

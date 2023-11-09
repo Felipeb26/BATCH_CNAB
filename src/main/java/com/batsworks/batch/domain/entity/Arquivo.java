@@ -34,6 +34,7 @@ public class Arquivo extends AbstractEntity<Arquivo> {
     @Column(name = "arquivo")
     private String file;
     private BigDecimal valorTotal;
+    private String observacao;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "arquivo")
     @JsonBackReference
     private Set<CnabEntity> cnab;
