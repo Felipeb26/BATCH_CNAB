@@ -47,9 +47,10 @@ public class Cnab400Service {
     private final PlatformTransactionManager platformTransactionManager;
     private final JobRepository repository;
 
-    @Bean
-    Job jobCnab(Step step, JobRepository jobRepository) {
-        return new JobBuilder("CNAB_400_JOB_" + actualDateString(), jobRepository)
+    @Bean()
+    Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner) {
+        return new JobBuilder("CNAB_400_JOB", jobRepository)
+                .listener(cnabSkipListenner)
                 .flow(step)
                 .next(updateSituacaoCnab())
                 .end()
@@ -57,7 +58,7 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step step(CnabReader<Cnab400> cnabReader, CnabProcessor processor, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
+    Step step(CnabReader<Cnab400> cnabReader, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
@@ -66,8 +67,7 @@ public class Cnab400Service {
                 .writer(asyncItemWriter(writerCnab))
                 .faultTolerant()
                 .skipPolicy(skipPolicy)
-                .listener(processor)
-                .listener(cnabSkipListenner)
+                .listener(processor())
                 .build();
     }
 
@@ -94,7 +94,6 @@ public class Cnab400Service {
         cnab.setLineMapper(lineMapper());
         return cnab;
     }
-
 
     @Bean
     CnabProcessor processor() {
@@ -168,9 +167,9 @@ public class Cnab400Service {
     @Bean
     TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(15);
-        taskExecutor.setCorePoolSize(15);
-        taskExecutor.setQueueCapacity(20);
+        taskExecutor.setMaxPoolSize(5);
+        taskExecutor.setCorePoolSize(5);
+        taskExecutor.setQueueCapacity(10);
         taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
         taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return taskExecutor;
@@ -190,6 +189,5 @@ public class Cnab400Service {
         asyncWritter.setDelegate(writerCnab);
         return asyncWritter;
     }
-
 
 }

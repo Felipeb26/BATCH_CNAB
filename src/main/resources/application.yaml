@@ -79,6 +79,11 @@ spring:
   h2:
     console:
       enabled: true
+org:
+  quartz:
+    jobStore.class: org.quartz.simpl.RAMJobStore
+    scheduler.instanceName: BATCH_CNAB
+    threadPool.threadCount: 3
 
 configuration:
   max_size: 3000

@@ -24,9 +24,11 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
 
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
-        String path = stepExecution.getJobParameters().getString("path");
-        String value = resolveFileName(path, true);
-        id = Long.valueOf(value);
+        var map = stepExecution.getJobParameters();
+        var path = map.getString("path");
+        path = resolveFileName(path, true);
+        log.info("PROCESSING FILE {}", path);
+        id = map.getLong("id");
     }
 
     @Override

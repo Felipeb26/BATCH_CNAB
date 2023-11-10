@@ -2,7 +2,6 @@ package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.config.utils.AsyncFunctions;
-import com.batsworks.batch.config.utils.BatchParameters;
 import com.batsworks.batch.config.utils.Compress;
 import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.entity.Arquivo;
@@ -13,6 +12,7 @@ import com.batsworks.batch.repository.ArquivoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,13 +20,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.batsworks.batch.config.utils.Utilities.*;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Slf4j
@@ -36,9 +33,8 @@ public class CnabService {
 
     private final Compress compress;
     private final ArquivoRepository arquivoRepository;
-    private final JobLauncher asyncWrite;
-    private final Job jobWriteCnab;
-    private final BatchParameters parameters;
+    private final JobLauncher asyncWrite, jobLauncherAsync;
+    private final Job jobWriteCnab, jobCnab;
     @Value("${configuration.default_folder:tmp}")
     private String tempFolderPath;
 
@@ -47,11 +43,7 @@ public class CnabService {
         Arquivo arquivo = new Arquivo();
         try {
             var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
-            var storagePlace = Paths.get(tempFolderPath);
-            var haveSaved = transferFile(file.getInputStream(), storagePlace.resolve(fileName));
 
-            if (Boolean.FALSE.equals(haveSaved))
-                throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
 
             var data = compressData(file.getBytes(), fileName);
             arquivo = Arquivo.builder()
@@ -65,10 +57,18 @@ public class CnabService {
 
             arquivo = arquivoRepository.save(arquivo);
 
-            Map<String, Object> map = new HashMap<>();
-            map.put("id", arquivo.getId());
+            var storagePlace = Paths.get(tempFolderPath).resolve(fileName.concat("_" + arquivo.getId()));
+            var haveSaved = transferFile(file.getInputStream(), storagePlace);
+            if (Boolean.FALSE.equals(haveSaved))
+                throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
 
-            parameters.setParameters(map);
+//            var parameters = new JobParametersBuilder()
+//                    .addJobParameter("id", arquivo.getId(), Long.class, true)
+//                    .addJobParameter("path", storagePlace.toString(), String.class, true)
+//                    .toJobParameters();
+//
+////            jobLauncherAsync.run(jobCnab, parameters);
+
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());

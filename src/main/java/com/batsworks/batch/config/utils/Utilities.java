@@ -32,8 +32,31 @@ public class Utilities {
     private String prefix;
     private static final int BUFFER = 1048576;
 
+    public static String findFileRem() {
+        var folder = System.getProperty("user.dir").concat("/tmp");
+        try {
+            var file = new File(folder);
+            if (file.isFile()) return file.getAbsolutePath();
+            try (Stream<Path> walked = Files.walk(file.toPath())) {
+                walked.filter(it -> !regexFile(it, "rem").endsWith(".rem")).sorted(Comparator.comparing(p -> p.toString().length())).forEach(System.out::println);
+                return walked.filter(it -> it.endsWith(".rem")).findFirst().map(Path::toString).orElse(null);
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+    public static void main(String[] args) {
+        var o = findFileRem();
+        System.out.println(o);
+    }
+
+
     public static String resolveFileName(String file, Boolean findCode) {
+        if (file == null) return file;
         var index = file.lastIndexOf(isNull(prefix) ? "_" : prefix);
+        if (index == -1) return file;
         if (findCode) {
             return file.substring(index + 1);
         }
@@ -42,6 +65,25 @@ public class Utilities {
 
     public static String randomFileName() {
         return UUID.randomUUID() + ".rem";
+    }
+
+    public String regexFile(Object o, String extension) {
+        if (o instanceof String s) {
+            var index = s.lastIndexOf(extension);
+            if (index == -1) return null;
+            index = index + 3;
+            s= s.substring(index);
+            return s;
+        }
+        if (o instanceof Path path) {
+            var index = path.toString().lastIndexOf(extension);
+            if(index == -1) return null;
+            index = index +3;
+            var s = path.toString().substring(0, index);
+            System.out.println(s);
+            return s;
+        }
+        return null;
     }
 
     public static String randomFileName(String extension) {
@@ -133,7 +175,7 @@ public class Utilities {
             while ((read = bis.read(buffer, 0, buffer.length)) != -1) {
                 os.write(buffer, 0, read);
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
     }
