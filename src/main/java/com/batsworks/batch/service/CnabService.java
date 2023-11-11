@@ -1,5 +1,19 @@
 package com.batsworks.batch.service;
 
+import static com.batsworks.batch.config.utils.Utilities.*;
+import static java.util.Objects.*;
+import static org.springframework.http.HttpStatus.*;
+
+import java.nio.file.Paths;
+import java.util.Optional;
+
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.config.utils.AsyncFunctions;
 import com.batsworks.batch.config.utils.Compress;
@@ -9,22 +23,9 @@ import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.repository.ArquivoRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParametersBuilder;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.nio.file.Paths;
-import java.util.Optional;
-
-import static com.batsworks.batch.config.utils.Utilities.*;
-import static java.util.Objects.isNull;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Slf4j
 @Service

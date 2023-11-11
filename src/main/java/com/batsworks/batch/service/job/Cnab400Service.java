@@ -1,9 +1,12 @@
 package com.batsworks.batch.service.job;
 
-import com.batsworks.batch.config.cnab.*;
-import com.batsworks.batch.domain.records.Cnab;
-import com.batsworks.batch.domain.records.Cnab400;
-import lombok.RequiredArgsConstructor;
+import static com.batsworks.batch.config.utils.Utilities.*;
+
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import javax.sql.DataSource;
+
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -32,12 +35,15 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import javax.sql.DataSource;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import com.batsworks.batch.config.cnab.CnabJobListener;
+import com.batsworks.batch.config.cnab.CnabLineMapper;
+import com.batsworks.batch.config.cnab.CnabProcessor;
+import com.batsworks.batch.config.cnab.CnabReader;
+import com.batsworks.batch.config.cnab.CnabSkipListenner;
+import com.batsworks.batch.domain.records.Cnab;
+import com.batsworks.batch.domain.records.Cnab400;
 
-import static com.batsworks.batch.config.utils.Utilities.actualDateString;
-import static com.batsworks.batch.config.utils.Utilities.resolveFileName;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableBatchProcessing
@@ -48,11 +54,11 @@ public class Cnab400Service {
     private final JobRepository repository;
 
     @Bean()
-    Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner) {
+    Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner, CnabJobListener cnabJobListener) {
         return new JobBuilder("CNAB_400_JOB", jobRepository)
                 .listener(cnabSkipListenner)
+                .listener(cnabJobListener)
                 .flow(step)
-                .next(updateSituacaoCnab())
                 .end()
                 .build();
     }
@@ -72,21 +78,13 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step updateSituacaoCnab() {
-        return new StepBuilder("CNAB_400_ATUALIZACAO_ARQUIVO", repository)
-                .tasklet(cnabTasklet(), platformTransactionManager)
-                .build();
-    }
-
-    @Bean
-    CnabTasklet cnabTasklet() {
-        return new CnabTasklet();
+    CnabJobListener cnabJobListener(){
+        return new CnabJobListener();
     }
 
     @Bean
     @StepScope
     CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") String resource) {
-        resource = resolveFileName(resource, false);
         var cnab = new CnabReader<Cnab400>();
         cnab.setStrict(false);
         cnab.setResource(new PathResource(resource));

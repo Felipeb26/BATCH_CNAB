@@ -26,10 +26,8 @@ public class QuartzJob extends QuartzJobBean {
     protected void executeInternal(JobExecutionContext context) {
         try {
             String file = findFileRem();
-            if (file == null) {
-                log.info("no file found");
-                return;
-            }
+            if (file == null)    return;
+            
             Long id = Long.valueOf(resolveFileName(file, true));
 
             Job job = jobLocator.getJob(jobName);
