@@ -11,7 +11,9 @@ import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
-import static com.batsworks.batch.config.utils.Utilities.*;
+import static com.batsworks.batch.utils.UtilitiesFiles.findFile;
+import static com.batsworks.batch.utils.UtilitiesFiles.resolveFileName;
+import static com.batsworks.batch.utils.UtilitiesParse.actualDateString;
 
 @Getter
 @Setter
@@ -25,9 +27,9 @@ public class QuartzJob extends QuartzJobBean {
     @Override
     protected void executeInternal(JobExecutionContext context) {
         try {
-            String file = findFileRem();
-            if (file == null)    return;
-            
+            String file = findFile();
+            if (file == null) return;
+
             Long id = Long.valueOf(resolveFileName(file, true));
 
             Job job = jobLocator.getJob(jobName);

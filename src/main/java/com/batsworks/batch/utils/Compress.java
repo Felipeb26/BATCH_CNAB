@@ -1,4 +1,4 @@
-package com.batsworks.batch.config.utils;
+package com.batsworks.batch.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -62,7 +62,6 @@ public class Compress {
 //            }
 
             zipInputStream.closeEntry();
-            zipInputStream.close();
 
             log.info("ARQUIVO {} descompactado", fileName);
             return baos.toByteArray();

@@ -1,6 +1,6 @@
 package com.batsworks.batch.domain.mapper;
 
-import com.batsworks.batch.domain.dto.CnabErroDTO;
+import com.batsworks.batch.domain.records.CnabErroDTO;
 import com.batsworks.batch.domain.entity.CnabErro;
 import lombok.experimental.UtilityClass;
 

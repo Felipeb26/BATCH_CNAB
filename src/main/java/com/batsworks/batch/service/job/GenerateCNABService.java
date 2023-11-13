@@ -27,7 +27,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.batsworks.batch.config.utils.Utilities.actualDateString;
+import static com.batsworks.batch.utils.UtilitiesParse.actualDateString;
 
 @Configuration
 @RequiredArgsConstructor

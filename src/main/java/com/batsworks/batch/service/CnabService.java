@@ -1,41 +1,37 @@
 package com.batsworks.batch.service;
 
-import static com.batsworks.batch.config.utils.Utilities.*;
-import static java.util.Objects.*;
-import static org.springframework.http.HttpStatus.*;
-
-import java.nio.file.Paths;
-import java.util.Optional;
-
-import org.springframework.batch.core.Job;
-import org.springframework.batch.core.launch.JobLauncher;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.batsworks.batch.config.exception.BussinesException;
-import com.batsworks.batch.config.utils.AsyncFunctions;
-import com.batsworks.batch.config.utils.Compress;
-import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.repository.ArquivoRepository;
-
+import com.batsworks.batch.utils.AsyncFunctions;
+import com.batsworks.batch.utils.Compress;
+import com.batsworks.batch.utils.UtilitiesParse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-@Slf4j
+import java.nio.file.Paths;
+import java.util.Optional;
+
+import static com.batsworks.batch.utils.UtilitiesFiles.*;
+import static com.batsworks.batch.utils.UtilitiesParse.encodeByteToBASE64String;
+import static com.batsworks.batch.utils.UtilitiesParse.makeFileName;
+import static java.util.Objects.isNull;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
+
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class CnabService {
 
     private final Compress compress;
     private final ArquivoRepository arquivoRepository;
-    private final JobLauncher asyncWrite, jobLauncherAsync;
-    private final Job jobWriteCnab, jobCnab;
     @Value("${configuration.default_folder:tmp}")
     private String tempFolderPath;
 
@@ -58,17 +54,11 @@ public class CnabService {
 
             arquivo = arquivoRepository.save(arquivo);
 
-            var storagePlace = Paths.get(tempFolderPath).resolve(fileName.concat("_" + arquivo.getId()));
+            var storagePlace = Paths.get(tempFolderPath).resolve(makeFileName(fileName, arquivo.getId()));
             var haveSaved = transferFile(file.getInputStream(), storagePlace);
             if (Boolean.FALSE.equals(haveSaved))
                 throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
 
-//            var parameters = new JobParametersBuilder()
-//                    .addJobParameter("id", arquivo.getId(), Long.class, true)
-//                    .addJobParameter("path", storagePlace.toString(), String.class, true)
-//                    .toJobParameters();
-//
-////            jobLauncherAsync.run(jobCnab, parameters);
 
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
@@ -89,7 +79,7 @@ public class CnabService {
                 throw new BussinesException(BAD_REQUEST, "Arquivo não encontrado", new Object[]{Status.DOWNLOAD_ERROR});
 
             var arquivo = optionalString.get();
-            var bytes = Utilities.decodeBASE64(arquivo.getBytes());
+            var bytes = UtilitiesParse.decodeBASE64(arquivo.getBytes());
 //            var descompressData = asyncFunctions.object(Compress::decompressData, bytes);
 
 //            var jobParameters = new JobParametersBuilder()
@@ -111,7 +101,7 @@ public class CnabService {
 
     public String resetTempFile() {
         try {
-            Utilities.deleteFile(tempFolderPath);
+            deleteFile(tempFolderPath);
             return "Pasta tmp deletada com sucesso";
         } catch (Exception e) {
             throw new BussinesException(BAD_REQUEST, "erro ao resetar pasta tmp ", new Object[]{Status.ERROR});
