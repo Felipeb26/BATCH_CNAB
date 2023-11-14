@@ -16,10 +16,6 @@ public record PageDTO<T, E>(
         int numberOfElements
 ) {
 
-    public PageDTO(Page<T> page) {
-        this((List<E>) page.getContent(), page.getNumber(), page.getSize(), page.isFirst(), page.isLast(), page.getTotalPages(), page.getSize(), page.getNumberOfElements());
-    }
-
     public PageDTO(Page<T> page, Function<List<T>, List<E>> function) {
         this(function.apply(page.getContent()), page.getNumber(), page.getSize(), page.isFirst(), page.isLast(), page.getTotalPages(), page.getSize(), page.getNumberOfElements());
 

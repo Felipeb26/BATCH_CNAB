@@ -14,7 +14,7 @@ public interface CnabRepository extends CrudRepository<CnabEntity, Long>, Paging
     @Query("FROM Cnab ce WHERE ce.arquivo.id=?1")
     Optional<List<CnabEntity>> findAllByIdArquivo(Long idArquivo);
 
-    @Query("SELECT COUNT(*) FROM Cnab ce WHERE ce.arquivo.id=?1")
+    @Query("SELECT COUNT(ce.id) FROM Cnab ce WHERE ce.arquivo.id=?1")
     Long countCnabsByIdArquivo(Long idArquivo);
 
     @Query("SELECT SUM(c.valorTitulo) FROM Cnab c WHERE c.arquivo.id=?1")

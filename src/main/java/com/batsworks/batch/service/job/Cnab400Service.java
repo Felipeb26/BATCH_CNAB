@@ -1,15 +1,11 @@
 package com.batsworks.batch.service.job;
 
-import static com.batsworks.batch.config.utils.Utilities.*;
-
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-
-import javax.sql.DataSource;
-
+import com.batsworks.batch.config.cnab.*;
+import com.batsworks.batch.domain.records.Cnab;
+import com.batsworks.batch.domain.records.Cnab400;
+import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -32,21 +28,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.batsworks.batch.config.cnab.CnabJobListener;
-import com.batsworks.batch.config.cnab.CnabLineMapper;
-import com.batsworks.batch.config.cnab.CnabProcessor;
-import com.batsworks.batch.config.cnab.CnabReader;
-import com.batsworks.batch.config.cnab.CnabSkipListenner;
-import com.batsworks.batch.domain.records.Cnab;
-import com.batsworks.batch.domain.records.Cnab400;
-
-import lombok.RequiredArgsConstructor;
+import javax.sql.DataSource;
+import java.util.concurrent.Future;
 
 @Configuration
-@EnableBatchProcessing
 @RequiredArgsConstructor
 public class Cnab400Service {
 
@@ -64,22 +51,17 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step step(CnabReader<Cnab400> cnabReader, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy) {
+    Step step(CnabReader<Cnab400> cnabReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter,CnabProcessor processor, SkipPolicy skipPolicy) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
                 .reader(cnabReader)
-                .processor(asyncItemProcessor())
-                .writer(asyncItemWriter(writerCnab))
+                .processor(asyncItemProcessor)
+                .writer(asyncItemWriter)
                 .faultTolerant()
                 .skipPolicy(skipPolicy)
-                .listener(processor())
+                .listener(processor)
                 .build();
-    }
-
-    @Bean
-    CnabJobListener cnabJobListener(){
-        return new CnabJobListener();
     }
 
     @Bean
@@ -93,10 +75,6 @@ public class Cnab400Service {
         return cnab;
     }
 
-    @Bean
-    CnabProcessor processor() {
-        return new CnabProcessor();
-    }
 
     @Bean
     JdbcBatchItemWriter<Cnab> writerCnab(DataSource dataSource) {
@@ -121,18 +99,13 @@ public class Cnab400Service {
 
         FixedLengthTokenizer lineTokenizer = new FixedLengthTokenizer();
         lineTokenizer.setStrict(false);
-        lineTokenizer.setNames("identRegistro", "agenciaDebito", "digitoAgencia",
-                "razaoAgencia", "contaCorrente", "digitoConta",
-                "identBeneficiario", "controleParticipante", "codigoBanco",
-                "campoMulta", "percentualMulta", "nossoNumero",
-                "digitoConferenciaNumeroBanco", "descontoDia", "condicaoEmpissaoPapeladaCobranca",
-                "boletoDebitoAutomatico", "identificacaoOcorrencia", "numeroDocumento",
-                "dataVencimento", "valorTitulo", "especieTitulo",
-                "dataEmissao", "primeiraInstrucao", "segundaInstrucao",
-                "moraDia", "dataLimiteDescontoConcessao", "valorDesconto",
-                "valorIOF", "valorAbatimento", "tipoPagador",
-                "nomePagador", "endereco", "primeiraMensagem",
-                "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro");
+        lineTokenizer.setNames("identRegistro", "agenciaDebito", "digitoAgencia", "razaoAgencia",
+                "contaCorrente", "digitoConta", "identBeneficiario", "controleParticipante",
+                "codigoBanco", "campoMulta", "percentualMulta", "nossoNumero", "digitoConferenciaNumeroBanco",
+                "descontoDia", "condicaoEmpissaoPapeladaCobranca", "boletoDebitoAutomatico", "identificacaoOcorrencia",
+                "numeroDocumento", "dataVencimento", "valorTitulo", "especieTitulo", "dataEmissao", "primeiraInstrucao",
+                "segundaInstrucao", "moraDia", "dataLimiteDescontoConcessao", "valorDesconto", "valorIOF", "valorAbatimento",
+                "tipoPagador", "nomePagador", "endereco", "primeiraMensagem", "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro");
 
         lineTokenizer.setColumns(new Range(1, 1), new Range(2, 6), new Range(7, 7), new Range(8, 12), new Range(13, 19),
                 new Range(20, 20), new Range(21, 37), new Range(38, 52), new Range(63, 65), new Range(66, 66),
@@ -154,30 +127,19 @@ public class Cnab400Service {
      * TaskExecutor executa de forma asycrona - multithread
      **/
     @Bean
-    JobLauncher jobLauncherAsync(JobRepository repository) throws Exception {
+    JobLauncher jobLauncherAsync(JobRepository repository, TaskExecutor taskExecutor) throws Exception {
         var jobLauncher = new TaskExecutorJobLauncher();
         jobLauncher.setJobRepository(repository);
-        jobLauncher.setTaskExecutor(taskExecutor());
+        jobLauncher.setTaskExecutor(taskExecutor);
         jobLauncher.afterPropertiesSet();
         return jobLauncher;
     }
 
     @Bean
-    TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(5);
-        taskExecutor.setCorePoolSize(5);
-        taskExecutor.setQueueCapacity(10);
-        taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
-        taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        return taskExecutor;
-    }
-
-    @Bean
-    public AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor() {
+    public AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor(TaskExecutor taskExecutor, CnabProcessor processor) {
         var asyncItemProcessor = new AsyncItemProcessor<Cnab400, Cnab>();
-        asyncItemProcessor.setDelegate(processor());
-        asyncItemProcessor.setTaskExecutor(taskExecutor());
+        asyncItemProcessor.setDelegate(processor);
+        asyncItemProcessor.setTaskExecutor(taskExecutor);
         return asyncItemProcessor;
     }
 

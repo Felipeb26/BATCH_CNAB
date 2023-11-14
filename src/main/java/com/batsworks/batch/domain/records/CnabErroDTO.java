@@ -1,4 +1,4 @@
-package com.batsworks.batch.domain.dto;
+package com.batsworks.batch.domain.records;
 
 import java.time.LocalDateTime;
 

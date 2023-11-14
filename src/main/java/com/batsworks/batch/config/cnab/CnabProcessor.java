@@ -12,7 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
-import static com.batsworks.batch.config.utils.Utilities.resolveFileName;
+import static com.batsworks.batch.utils.UtilitiesParse.encodeByteToBASE64String;
+import static com.batsworks.batch.utils.UtilitiesFiles.resolveFileName;
 import static java.util.Objects.isNull;
 
 @Slf4j
@@ -27,7 +28,7 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         var map = stepExecution.getJobParameters();
         var path = map.getString("path");
         path = resolveFileName(path, true);
-        log.info("PROCESSING FILE {}", path);
+        log.info("==========================> START PROCESSING FILE {} AT {}", path, map.getString("time"));
         id = map.getLong("id");
     }
 
@@ -48,4 +49,12 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         ).withDates(cnab.dataVencimento(), cnab.dataEmissao(), cnab.dataLimiteDescontoConcessao());
     }
 
+
+    public static void main(String[] args) {
+        String file = "cnab_felipes.rem";
+        Long id = 25L;
+
+       var i = encodeByteToBASE64String((file+"_"+id).getBytes());
+        System.out.println(i);
+    }
 }

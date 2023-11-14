@@ -1,4 +1,4 @@
-package com.batsworks.batch.config.utils;
+package com.batsworks.batch.utils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
