@@ -44,9 +44,8 @@ public class CnabService {
         Arquivo arquivo = new Arquivo();
         try {
             var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
-
-
             var data = compressData(file.getBytes(), fileName);
+
             arquivo = Arquivo.builder()
                     .name(fileName)
                     .extension(fileType(file.getInputStream(), fileName))
@@ -58,18 +57,11 @@ public class CnabService {
 
             arquivo = arquivoRepository.save(arquivo);
 
-            var storagePlace = Paths.get(tempFolderPath).resolve(fileName.concat("_" + arquivo.getId()));
+            var storagePlace = Paths.get(tempFolderPath).resolve(mask(fileName, arquivo.getId()));
             var haveSaved = transferFile(file.getInputStream(), storagePlace);
+
             if (Boolean.FALSE.equals(haveSaved))
                 throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
-
-//            var parameters = new JobParametersBuilder()
-//                    .addJobParameter("id", arquivo.getId(), Long.class, true)
-//                    .addJobParameter("path", storagePlace.toString(), String.class, true)
-//                    .toJobParameters();
-//
-////            jobLauncherAsync.run(jobCnab, parameters);
-
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());

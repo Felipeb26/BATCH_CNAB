@@ -48,6 +48,14 @@ public class Utilities {
     System.out.println(file);
   }
 
+
+  public static String mask(String value, Object... args) {
+    for (Object arg : args) {
+      value = value.concat("_" + arg);
+    }
+    return encodeByteToBASE64String(value.getBytes()).concat(".rem");
+  }
+
   public static String findFileRem() {
     var folder = System.getProperty("user.dir").concat("/tmp");
     try {
