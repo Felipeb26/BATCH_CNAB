@@ -1,6 +1,6 @@
 package com.batsworks.batch.service.job;
 
-import com.batsworks.batch.config.cnab.*;
+import com.batsworks.batch.cnab.read.*;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step step(CnabReader<Cnab400> cnabReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter,CnabProcessor processor, SkipPolicy skipPolicy) {
+    Step step(CnabReader<Cnab400> cnabReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor, SkipPolicy skipPolicy) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)

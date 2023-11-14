@@ -2,6 +2,7 @@ package com.batsworks.batch.domain.entity;
 
 import com.batsworks.batch.domain.enums.Status;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Cache;
@@ -31,8 +32,10 @@ public class Arquivo extends AbstractEntity<Arquivo> {
     private Long quantidade;
     @Enumerated(EnumType.STRING)
     private Status situacao;
+    @Lob
+    @Nonnull
     @Column(name = "arquivo")
-    private String file;
+    private byte[] file;
     private BigDecimal valorTotal;
     private String observacao;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "arquivo")

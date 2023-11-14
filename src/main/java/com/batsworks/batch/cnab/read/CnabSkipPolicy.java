@@ -1,4 +1,4 @@
-package com.batsworks.batch.config.cnab;
+package com.batsworks.batch.cnab.read;
 
 
 import com.batsworks.batch.config.exception.CnabException;

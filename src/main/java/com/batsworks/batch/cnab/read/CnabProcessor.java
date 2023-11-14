@@ -1,4 +1,4 @@
-package com.batsworks.batch.config.cnab;
+package com.batsworks.batch.cnab.read;
 
 import com.batsworks.batch.domain.enums.Zones;
 import com.batsworks.batch.domain.records.Cnab;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
-import static com.batsworks.batch.utils.Utilities.encodeByteToBASE64String;
 import static com.batsworks.batch.utils.Utilities.resolveFileName;
 import static java.util.Objects.isNull;
 
@@ -49,12 +48,4 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         ).withDates(cnab.dataVencimento(), cnab.dataEmissao(), cnab.dataLimiteDescontoConcessao());
     }
 
-
-    public static void main(String[] args) {
-        String file = "cnab_felipes.rem";
-        Long id = 25L;
-
-       var i = encodeByteToBASE64String((file+"_"+id).getBytes());
-        System.out.println(i);
-    }
 }

@@ -6,6 +6,12 @@ logging:
     'com.batsworks.batch.config.utils': debug
     'com.batsworks.batch': debug
 
+server:
+  compression:
+    enabled: true
+    mime-types: application/json, application/xml,text/html,image/jpeg
+
+
 management:
   endpoint:
     health:
@@ -20,7 +26,7 @@ management:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: ${ZIPKIN_HTTP}://${ZIPKIN_HOST}:${ZIPKIN_PORT}/api/v2/spans
+      endpoint: ${ZIPKIN_HTTP:http}://${ZIPKIN_HOST:localhost}:${ZIPKIN_PORT:9411}/api/v2/spans
 
 
 spring:
@@ -35,17 +41,17 @@ spring:
     job:
       enabled: false
   datasource:
-    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
-    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: SA
-    password: Felipe@2001
-#    url: jdbc:mysql://172.23.155.68:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    username: ${DB_USER}
-#    password: ${DB_PASS}
+    #    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+    #    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    #    username: SA
+    #    password: Felipe@2001
+    url: jdbc:mysql://172.23.155.68:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
-#    database-platform: org.hibernate.dialect.MySQLDialect
-    database-platform: org.hibernate.dialect.SQLServerDialect
+    database-platform: org.hibernate.dialect.MySQLDialect
+    #    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
       ddl-auto: none
       jdbc.batch_size: 30
@@ -59,7 +65,7 @@ spring:
           sharedCache:
             mode: ENABLE_SELECTIVE
       hibernate:
-        format_sql: false
+        format_sql: true
         generate_statistics: false
         order_inserts: true
         order_updates: true

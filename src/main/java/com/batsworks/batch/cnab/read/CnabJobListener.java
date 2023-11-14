@@ -1,4 +1,4 @@
-package com.batsworks.batch.config.cnab;
+package com.batsworks.batch.cnab.read;
 
 import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.domain.enums.Status;
@@ -10,7 +10,8 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.batsworks.batch.utils.Utilities.*;
+import static com.batsworks.batch.utils.Utilities.actualDateString;
+import static com.batsworks.batch.utils.Utilities.deleteFile;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -36,7 +37,7 @@ public class CnabJobListener implements JobExecutionListener {
         var path = map.getString("path");
 
         if (path == null) throw new BussinesException(BAD_REQUEST, "File Path is Null");
-        Long id = map.getLong("id", Long.valueOf(resolveFileName(path, true)));
+        Long id = map.getLong("id");
 
         var arquivo = arquivoRepository.findById(requireNonNull(id))
                 .orElseThrow(() -> new BussinesException(BAD_REQUEST, "ARQUIVO NÂO ENCONTRADO"));

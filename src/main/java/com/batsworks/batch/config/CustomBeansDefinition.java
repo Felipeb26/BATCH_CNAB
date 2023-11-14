@@ -1,9 +1,9 @@
 package com.batsworks.batch.config;
 
-import com.batsworks.batch.config.cnab.CnabJobListener;
-import com.batsworks.batch.config.cnab.CnabProcessor;
-import com.batsworks.batch.config.cnab.CnabSkipListenner;
-import com.batsworks.batch.config.cnab.CnabSkipPolicy;
+import com.batsworks.batch.cnab.read.CnabJobListener;
+import com.batsworks.batch.cnab.read.CnabProcessor;
+import com.batsworks.batch.cnab.read.CnabSkipListenner;
+import com.batsworks.batch.cnab.read.CnabSkipPolicy;
 import com.batsworks.batch.domain.entity.BatchParameters;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.skip.SkipPolicy;

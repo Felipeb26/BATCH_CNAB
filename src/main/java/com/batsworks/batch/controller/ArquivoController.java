@@ -40,9 +40,9 @@ public class ArquivoController {
                 .body(response);
     }
 
-    @GetMapping("/")
-    public String string() {
-        return service.string();
+    @GetMapping("/{id}")
+    public Object string(@PathVariable Long id) {
+        return service.string(id);
     }
 
     @GetMapping("/reset")

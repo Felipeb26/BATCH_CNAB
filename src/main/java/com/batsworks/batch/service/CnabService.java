@@ -10,6 +10,7 @@ import com.batsworks.batch.utils.Utilities;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,7 +21,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static com.batsworks.batch.utils.Utilities.*;
-import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Slf4j
@@ -29,8 +30,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class CnabService {
 
     private final ArquivoRepository arquivoRepository;
-    private final JobLauncher asyncWrite, jobLauncherAsync;
-    private final Job jobWriteCnab, jobCnab;
+    private final JobLauncher asyncWrite;
+    private final Job jobWriteCnab;
     @Value("${configuration.default_folder:tmp}")
     private String tempFolderPath;
 
@@ -38,7 +39,7 @@ public class CnabService {
     public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo) {
         Arquivo arquivo = new Arquivo();
         try {
-            var fileName = StringUtils.cleanPath(isNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
+            var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
             var data = compressData(file.getBytes(), fileName);
 
             arquivo = Arquivo.builder()
@@ -46,7 +47,7 @@ public class CnabService {
                     .extension(fileType(file.getInputStream(), fileName))
                     .fileSize(String.valueOf(file.getSize()))
                     .situacao(Status.PROCESSANDO)
-                    .file(encodeByteToBASE64String(data))
+                    .file(data)
                     .build();
 
 
@@ -56,9 +57,7 @@ public class CnabService {
             var haveSaved = transferFile(file.getInputStream(), storagePlace);
 
             if (Boolean.FALSE.equals(haveSaved))
-                throw new BussinesException(BAD_REQUEST, "Erro ao analisar arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
-
-
+                throw new BussinesException(BAD_REQUEST, "Erro ao salvar para analise posterior do arquivo %s ".formatted(fileName), new Object[]{Status.PROCESSANDO});
             return new DefaultMessage("Analisando arquivo %s ".formatted(fileName), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -72,24 +71,23 @@ public class CnabService {
     public byte[] downloadCnab(Boolean retorno, Long idArquivo) {
         try {
 
-            Optional<String> optionalString = arquivoRepository.findArquivoById(idArquivo);
+            Optional<byte[]> optionalString = arquivoRepository.findArquivoById(idArquivo);
             if (optionalString.isEmpty())
                 throw new BussinesException(BAD_REQUEST, "Arquivo não encontrado", new Object[]{Status.DOWNLOAD_ERROR});
 
             var arquivo = optionalString.get();
-            var bytes = Utilities.decodeBASE64(arquivo.getBytes());
-//            var descompressData = asyncFunctions.object(Compress::decompressData, bytes);
 
-//            var jobParameters = new JobParametersBuilder()
-//                    .addJobParameter("download_cnab", randomFileName(), String.class, false)
-//                    .toJobParameters();
-//            asyncWrite.run(jobWriteCnab, jobParameters);
-//            var data = descompressData.get();
-            var data = decompressData(bytes);
-            if (data.length == 0) {
-                throw new BussinesException(BAD_REQUEST, "An error has happen while unzipping the file!", new Object[]{Status.DOWNLOAD_ERROR});
-            }
-            return data;
+            var jobParameters = new JobParametersBuilder()
+                    .addJobParameter("download_cnab", randomFileName(), String.class, false)
+                    .addJobParameter("TIME", actualDateString(), String.class)
+                    .addJobParameter("id", idArquivo, Long.class)
+                    .toJobParameters();
+            asyncWrite.run(jobWriteCnab, jobParameters);
+//            var data = decompressData(arquivo);
+//            if (data.length == 0) {
+//                throw new BussinesException(BAD_REQUEST, "An error has happen while unzipping the file!", new Object[]{Status.DOWNLOAD_ERROR});
+//            }
+            return new byte[0];
         } catch (Exception e) {
             log.error("log: {}", e.getMessage());
             throw new BussinesException(BAD_REQUEST, e.getMessage(), new Object[]{Status.DOWNLOAD_ERROR});
@@ -105,9 +103,9 @@ public class CnabService {
         }
     }
 
-    public String string() {
-        var arquivo = arquivoRepository.findById(1L).orElse(null);
+    public Object string(Long id) {
+        var arquivo = arquivoRepository.findById(id).orElse(null);
         if (arquivo == null) return "dnjksçbdvfikloj";
-        return arquivo.getName();
+        return decompressData(arquivo.getFile());
     }
 }

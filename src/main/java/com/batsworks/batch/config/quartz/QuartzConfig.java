@@ -1,13 +1,16 @@
 package com.batsworks.batch.config.quartz;
 
+import com.batsworks.batch.utils.Utilities;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
 import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.configuration.support.JobRegistryBeanPostProcessor;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
@@ -21,6 +24,11 @@ public class QuartzConfig {
     private final JobLocator jobLocator;
     private final Environment environment;
     private static final String JOB_NAME = "CNAB_400_JOB";
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void doSomethingAfterStartup() {
+       Utilities.temp();
+    }
 
     @Bean
     public JobRegistryBeanPostProcessor jobRegistryBeanPostProcessor(JobRegistry jobRegistry) {
