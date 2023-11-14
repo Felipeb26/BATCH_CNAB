@@ -12,8 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
-import static com.batsworks.batch.utils.UtilitiesParse.encodeByteToBASE64String;
-import static com.batsworks.batch.utils.UtilitiesFiles.resolveFileName;
+import static com.batsworks.batch.utils.Utilities.encodeByteToBASE64String;
+import static com.batsworks.batch.utils.Utilities.resolveFileName;
 import static java.util.Objects.isNull;
 
 @Slf4j

@@ -35,17 +35,17 @@ spring:
     job:
       enabled: false
   datasource:
-#    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
-#    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-#    username: SA
-#    password: Felipe@2001
-    url: jdbc:mysql://172.23.155.68:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: ${DB_USER}
-    password: ${DB_PASS}
+    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    username: SA
+    password: Felipe@2001
+#    url: jdbc:mysql://172.23.155.68:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    username: ${DB_USER}
+#    password: ${DB_PASS}
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
-#    database-platform: org.hibernate.dialect.SQLServerDialect
+#    database-platform: org.hibernate.dialect.MySQLDialect
+    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
       ddl-auto: none
       jdbc.batch_size: 30

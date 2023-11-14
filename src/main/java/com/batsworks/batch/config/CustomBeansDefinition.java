@@ -4,7 +4,7 @@ import com.batsworks.batch.config.cnab.CnabJobListener;
 import com.batsworks.batch.config.cnab.CnabProcessor;
 import com.batsworks.batch.config.cnab.CnabSkipListenner;
 import com.batsworks.batch.config.cnab.CnabSkipPolicy;
-import com.batsworks.batch.utils.BatchParameters;
+import com.batsworks.batch.domain.entity.BatchParameters;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.beans.factory.annotation.Value;

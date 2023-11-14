@@ -11,7 +11,7 @@ import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
-import static com.batsworks.batch.config.utils.Utilities.*;
+import static com.batsworks.batch.utils.Utilities.*;
 
 @Getter
 @Setter
@@ -28,6 +28,7 @@ public class QuartzJob extends QuartzJobBean {
             String file = findFileRem();
             if (file == null) return;
 
+            file = file.replace(".rem", "");
             file = new String(decodeBASE64(file.getBytes()));
 
             Long id = Long.valueOf(resolveFileName(file, true));

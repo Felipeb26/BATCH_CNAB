@@ -10,9 +10,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.batsworks.batch.utils.UtilitiesFiles.deleteFile;
-import static com.batsworks.batch.utils.UtilitiesFiles.resolveFileName;
-import static com.batsworks.batch.utils.UtilitiesParse.actualDateString;
+import static com.batsworks.batch.utils.Utilities.*;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;

@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import static com.batsworks.batch.utils.UtilitiesFiles.randomFileName;
+import static com.batsworks.batch.utils.Utilities.randomFileName;
 
 @RestController
 @RequestMapping("/v1/arquivo")

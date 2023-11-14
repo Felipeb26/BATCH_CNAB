@@ -1,12 +1,14 @@
 package com.batsworks.batch.service;
 
-import static com.batsworks.batch.config.utils.Utilities.*;
-import static java.util.Objects.*;
-import static org.springframework.http.HttpStatus.*;
-
-import java.nio.file.Paths;
-import java.util.Optional;
-
+import com.batsworks.batch.config.exception.BussinesException;
+import com.batsworks.batch.domain.entity.Arquivo;
+import com.batsworks.batch.domain.enums.CnabType;
+import com.batsworks.batch.domain.enums.Status;
+import com.batsworks.batch.domain.records.DefaultMessage;
+import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.utils.Utilities;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,25 +16,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.batsworks.batch.config.exception.BussinesException;
-import com.batsworks.batch.config.utils.AsyncFunctions;
-import com.batsworks.batch.config.utils.Compress;
-import com.batsworks.batch.config.utils.Utilities;
-import com.batsworks.batch.domain.entity.Arquivo;
-import com.batsworks.batch.domain.enums.CnabType;
-import com.batsworks.batch.domain.enums.Status;
-import com.batsworks.batch.domain.records.DefaultMessage;
-import com.batsworks.batch.repository.ArquivoRepository;
+import java.nio.file.Paths;
+import java.util.Optional;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import static com.batsworks.batch.utils.Utilities.*;
+import static java.util.Objects.isNull;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CnabService {
 
-    private final Compress compress;
     private final ArquivoRepository arquivoRepository;
     private final JobLauncher asyncWrite, jobLauncherAsync;
     private final Job jobWriteCnab, jobCnab;
@@ -76,7 +71,6 @@ public class CnabService {
 
     public byte[] downloadCnab(Boolean retorno, Long idArquivo) {
         try {
-            AsyncFunctions<byte[], byte[]> asyncFunctions = new AsyncFunctions<>();
 
             Optional<String> optionalString = arquivoRepository.findArquivoById(idArquivo);
             if (optionalString.isEmpty())
@@ -91,12 +85,11 @@ public class CnabService {
 //                    .toJobParameters();
 //            asyncWrite.run(jobWriteCnab, jobParameters);
 //            var data = descompressData.get();
-            var data = compress.decompressData(bytes);
+            var data = decompressData(bytes);
             if (data.length == 0) {
                 throw new BussinesException(BAD_REQUEST, "An error has happen while unzipping the file!", new Object[]{Status.DOWNLOAD_ERROR});
             }
             return data;
-//            return descompressData.get();
         } catch (Exception e) {
             log.error("log: {}", e.getMessage());
             throw new BussinesException(BAD_REQUEST, e.getMessage(), new Object[]{Status.DOWNLOAD_ERROR});

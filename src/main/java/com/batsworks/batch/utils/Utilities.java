@@ -1,4 +1,4 @@
-package com.batsworks.batch.config.utils;
+package com.batsworks.batch.utils;
 
 import static java.util.Objects.*;
 
