@@ -12,7 +12,6 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.file.FlatFileItemWriter;
@@ -60,17 +59,12 @@ public class GenerateCNABService {
     }
 
     @Bean
-    public ItemProcessor<CnabEntity, CnabEntity> itemProcessor() {
-        return item -> item;
-    }
-
-    @Bean
     public FlatFileItemWriter<CnabEntity> fileItemWriter() {
         FlatFileItemWriter<CnabEntity> writer = new FlatFileItemWriter<>();
         writer.setName("WRITE_CNAB");
 
-        var file = System.getProperty("user.dir").concat(randomFileName());
-        System.out.printf("\n\n\n%s\n\n\n",file);
+        var file = System.getProperty("user.dir").concat("/" + randomFileName());
+
         writer.setResource(new FileSystemResource(file));
 
         DelimitedLineAggregator<CnabEntity> lineAggregator = new DelimitedLineAggregator<>();
@@ -97,11 +91,10 @@ public class GenerateCNABService {
     }
 
     @Bean
-    public Step stepWrite(RepositoryItemReader<CnabEntity> repositoryItemReader, ItemProcessor<CnabEntity, CnabEntity> itemProcessor, FlatFileItemWriter<CnabEntity> fileItemWriter) {
+    public Step stepWrite(RepositoryItemReader<CnabEntity> repositoryItemReader, FlatFileItemWriter<CnabEntity> fileItemWriter) {
         return new StepBuilder("CNAB_TO_FILE", jobRepository)
                 .<CnabEntity, CnabEntity>chunk(100, transactionManager)
                 .reader(repositoryItemReader)
-                .processor(itemProcessor)
                 .writer(fileItemWriter)
                 .build();
     }

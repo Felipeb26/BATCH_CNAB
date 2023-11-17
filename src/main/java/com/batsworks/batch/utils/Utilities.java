@@ -30,10 +30,8 @@ public class Utilities {
 
     @Value("${configuration.code_prefix}")
     private String prefix;
-
     private static final int BUFFER = 1024;
     private static final String DIR = System.getProperty("user.dir");
-    private static int LOG = 0;
 
     public static String mask(String value, Object... args) {
         for (Object arg : args) {
@@ -82,7 +80,8 @@ public class Utilities {
         if (findCode) {
             return file.substring(index + 1);
         }
-        return file.substring(0, index);
+        var lasted = file.lastIndexOf("/");
+        return lasted > 0 ? file.substring(lasted, index) : file.substring(0, index);
     }
 
     public static String randomFileName() {
@@ -281,6 +280,5 @@ public class Utilities {
         if (file.exists()) return;
         file.mkdir();
     }
-
 
 }

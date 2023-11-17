@@ -3,6 +3,7 @@
 ## URLS
 
 - Application url: http://localhost:8080/
+- Swagger url: http://localhost:8080/swagger-ui/index.html#/
 
 <br/>
 
@@ -25,7 +26,6 @@
 - arquivo
 - cnab
 - cnab_erro
-- transacao
 
 ### Arquivo:
 
@@ -43,10 +43,6 @@
   erro e a quantidade de caracteres possuia na linha, a linha que ocorreu o erro, o numero da linha, o erro que saí pelo
   sistema, idArquivo para rastreabilidade e a data cadastrado para verificar quando foi incluido no sistema
 
-### Transacao
-
-* Tabela criada para testar fluxo de arquivos diferentes
-
 
 <hr/>
 
@@ -54,8 +50,14 @@
 ### Foi utilizado micrometer, spring actuator e zipkin para monitoramento e coleta de logs
 <br>
 
+#### ZIPKIN URL: http://localhost:9411/zipkin/
 ```docker
 docker run -d -p 9411:9411 openzipkin/zipkin
+```
+#### CONSUL URL: http://localhost:8500/ui/dc1
+
+```docker
+docker run -p 8500:8500/udp --name=consul consul:v0.6.4 agent -server -bootstrap -ui -client=0.0.0.0
 ```
 
 <br>
