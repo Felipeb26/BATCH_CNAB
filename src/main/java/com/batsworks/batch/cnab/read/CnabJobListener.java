@@ -10,8 +10,8 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.batsworks.batch.utils.Utilities.actualDateString;
-import static com.batsworks.batch.utils.Utilities.deleteFile;
+import static com.batsworks.batch.utils.Files.deleteFile;
+import static com.batsworks.batch.utils.Formats.actualDateString;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -30,7 +30,7 @@ public class CnabJobListener implements JobExecutionListener {
 
     @Override
     public void afterJob(JobExecution jobExecution) {
-        log.info("==========================> STARTED TO UPDATE FILE AT {}", actualDateString());
+        log.info("==========================> STARTING TO UPDATE FILE AT {}", actualDateString());
         var map = jobExecution.getJobParameters();
 
         if (map.isEmpty()) throw new BussinesException(BAD_REQUEST, "JobParameters is Null");

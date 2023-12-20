@@ -30,8 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.batsworks.batch.utils.Utilities.actualDateString;
-import static com.batsworks.batch.utils.Utilities.randomFileName;
+import static com.batsworks.batch.utils.Formats.actualDateString;
+import static com.batsworks.batch.utils.Files.randomFileName;
 
 @Configuration
 @RequiredArgsConstructor

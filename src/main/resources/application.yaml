@@ -62,7 +62,7 @@ spring:
     properties:
       jakarta.persistence.sharedCache.mode: ENABLE_SELECTIVE
       hibernate:
-        format_sql: true
+        format_sql: false
         generate_statistics: false
         order_inserts: true
         order_updates: true

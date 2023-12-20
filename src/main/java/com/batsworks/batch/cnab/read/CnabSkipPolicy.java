@@ -56,7 +56,7 @@ public class CnabSkipPolicy implements SkipPolicy {
         } else {
             log.error("AN UNCOMMON ERROR HAS HAPPEN: {}", t.getMessage());
         }
-        return false;
+        return true;
     }
 
     private boolean startWith(String compare) {

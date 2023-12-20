@@ -16,7 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.batsworks.batch.utils.Utilities.deleteFile;
+import static com.batsworks.batch.utils.Files.deleteFile;
 import static java.util.Objects.isNull;
 
 

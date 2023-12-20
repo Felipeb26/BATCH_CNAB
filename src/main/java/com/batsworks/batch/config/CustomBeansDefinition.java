@@ -53,8 +53,8 @@ public class CustomBeansDefinition {
     @Bean
     TaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(5);
-        taskExecutor.setCorePoolSize(5);
+        taskExecutor.setMaxPoolSize(8);
+        taskExecutor.setCorePoolSize(8);
         taskExecutor.setQueueCapacity(10);
         taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
         taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());

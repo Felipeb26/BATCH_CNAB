@@ -1,21 +1,15 @@
 package com.batsworks.batch.utils;
 
+
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.io.*;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryNotEmptyException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Date;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -26,27 +20,18 @@ import static java.util.Objects.isNull;
 
 @Slf4j
 @UtilityClass
-public class Utilities {
-
+public class Files {
     @Value("${configuration.code_prefix}")
     private String prefix;
     private static final int BUFFER = 1024;
     private static final String DIR = System.getProperty("user.dir");
-
-    public static String mask(String value, Object... args) {
-        for (Object arg : args) {
-            value = value.concat("_" + arg);
-        }
-        value = value.trim();
-        return encodeByteToBASE64String(value.getBytes(StandardCharsets.UTF_8)).concat(".rem");
-    }
 
     public static String findFileRem() {
         var folder = DIR.concat("/tmp");
         try {
             var file = new File(folder);
             if (file.isFile()) return file.getAbsolutePath();
-            try (Stream<Path> walked = Files.walk(file.toPath())) {
+            try (Stream<Path> walked = java.nio.file.Files.walk(file.toPath())) {
                 return walked.filter(it -> !regexFile(it, "rem").isBlank())
                         .findFirst()
                         .map(Path::toString)
@@ -62,7 +47,7 @@ public class Utilities {
         try {
             var file = new File(folder);
             if (file.isFile()) return file.getAbsolutePath();
-            try (Stream<Path> walked = Files.walk(file.toPath())) {
+            try (Stream<Path> walked = java.nio.file.Files.walk(file.toPath())) {
                 return walked.filter(it -> !regexFile(it, extension).isBlank())
                         .findFirst()
                         .map(Path::toString)
@@ -109,30 +94,6 @@ public class Utilities {
         if (isNull(extension) || extension.isBlank()) return randomFileName();
         if (!extension.startsWith(".")) extension = ".".concat(extension);
         return UUID.randomUUID() + extension;
-    }
-
-    public static String actualDateString() {
-        var date = Calendar.getInstance();
-        return String.format(
-                "%s-%s %s:%s:%s",
-                date.get(Calendar.MONTH) + 1,
-                date.get(Calendar.DATE),
-                date.get(Calendar.HOUR_OF_DAY),
-                date.get(Calendar.MINUTE),
-                date.get(Calendar.SECOND)
-        );
-    }
-
-    public static Date parseDate(String date) throws ParseException {
-        var dateFormat = new SimpleDateFormat("ddMMyy");
-        if (isNull(date) || date.isBlank()) return null;
-        return new Date(dateFormat.parse(date).getTime());
-    }
-
-    public static Date parseDate(String date, String pattern) throws ParseException {
-        var dateFormat = new SimpleDateFormat(pattern);
-        if (isNull(date) || date.isBlank()) return null;
-        return new Date(dateFormat.parse(date).getTime());
     }
 
     public static String fileType(InputStream inputStream, String fileName) throws IOException {
@@ -190,14 +151,6 @@ public class Utilities {
         return compressedData;
     }
 
-    public static String encodeByteToBASE64String(byte[] data) {
-        return Base64.getEncoder().encodeToString(data);
-    }
-
-    public static byte[] decodeBASE64(byte[] data) {
-        return Base64.getDecoder().decode(data);
-    }
-
     public static void transferFile(File file, String target) {
         try (
                 InputStream is = new FileInputStream(file);
@@ -232,14 +185,14 @@ public class Utilities {
         try {
             if (o instanceof String stringFilePath) {
                 var file = new File(Paths.get(stringFilePath).toString());
-                return file.isDirectory() ? deleteNotEmptyFolder(o) : Files.deleteIfExists(file.toPath());
+                return file.isDirectory() ? deleteNotEmptyFolder(o) : java.nio.file.Files.deleteIfExists(file.toPath());
             }
             if (o instanceof Path path) {
                 var file = new File(path.toString());
-                return file.isDirectory() ? deleteNotEmptyFolder(o) : Files.deleteIfExists(file.toPath());
+                return file.isDirectory() ? deleteNotEmptyFolder(o) : java.nio.file.Files.deleteIfExists(file.toPath());
             }
             if (o instanceof File file) {
-                return file.isDirectory() ? deleteNotEmptyFolder(o) : Files.deleteIfExists(file.toPath());
+                return file.isDirectory() ? deleteNotEmptyFolder(o) : java.nio.file.Files.deleteIfExists(file.toPath());
             }
         } catch (DirectoryNotEmptyException e) {
             return deleteNotEmptyFolder(o);
@@ -252,7 +205,7 @@ public class Utilities {
 
     private static Boolean deleteNotEmptyFolder(Object o) {
         if (o instanceof Path path) {
-            try (Stream<Path> pathStream = Files.walk(path)) {
+            try (Stream<Path> pathStream = java.nio.file.Files.walk(path)) {
                 pathStream.sorted(Comparator.reverseOrder())
                         .map(Path::toFile)
                         .forEach(File::delete);
@@ -262,7 +215,7 @@ public class Utilities {
         }
 
         if (o instanceof String string) {
-            try (Stream<Path> pathStream = Files.walk(Path.of(string))) {
+            try (Stream<Path> pathStream = java.nio.file.Files.walk(Path.of(string))) {
                 pathStream.sorted(Comparator.reverseOrder())
                         .map(Path::toFile)
                         .forEach(File::delete);
@@ -280,5 +233,4 @@ public class Utilities {
         if (file.exists()) return;
         file.mkdir();
     }
-
 }

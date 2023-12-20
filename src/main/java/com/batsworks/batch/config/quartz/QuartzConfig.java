@@ -1,6 +1,6 @@
 package com.batsworks.batch.config.quartz;
 
-import com.batsworks.batch.utils.Utilities;
+import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
 import org.springframework.batch.core.configuration.JobLocator;
@@ -27,7 +27,7 @@ public class QuartzConfig {
 
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
-       Utilities.temp();
+       Files.temp();
     }
 
     @Bean

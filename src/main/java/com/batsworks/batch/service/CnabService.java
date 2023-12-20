@@ -6,7 +6,7 @@ import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.repository.ArquivoRepository;
-import com.batsworks.batch.utils.Utilities;
+import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -20,7 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static com.batsworks.batch.utils.Utilities.*;
+import static com.batsworks.batch.utils.Files.*;
+import static com.batsworks.batch.utils.Formats.actualDateString;
+import static com.batsworks.batch.utils.Formats.mask;
 import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -96,7 +98,7 @@ public class CnabService {
 
     public String resetTempFile() {
         try {
-            Utilities.deleteFile(tempFolderPath);
+            Files.deleteFile(tempFolderPath);
             return "Pasta tmp deletada com sucesso";
         } catch (Exception e) {
             throw new BussinesException(BAD_REQUEST, "erro ao resetar pasta tmp ", new Object[]{Status.ERROR});

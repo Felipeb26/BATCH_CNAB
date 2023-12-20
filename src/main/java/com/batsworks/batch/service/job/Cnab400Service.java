@@ -18,25 +18,28 @@ import org.springframework.batch.integration.async.AsyncItemWriter;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
+import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
+import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.PathResource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.util.concurrent.Future;
 
 @Configuration
 @RequiredArgsConstructor
 public class Cnab400Service {
 
+    private static final String DIR = System.getProperty("user.dir");
     private final PlatformTransactionManager platformTransactionManager;
     private final JobRepository repository;
 
@@ -51,11 +54,11 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step step(CnabReader<Cnab400> cnabReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor, SkipPolicy skipPolicy) {
+    Step step(MultiResourceItemReader<Cnab400> multiResourceItemReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor, SkipPolicy skipPolicy) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
-                .reader(cnabReader)
+                .reader(multiResourceItemReader)
                 .processor(asyncItemProcessor)
                 .writer(asyncItemWriter)
                 .faultTolerant()
@@ -66,15 +69,23 @@ public class Cnab400Service {
 
     @Bean
     @StepScope
-    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") String resource) {
+    public MultiResourceItemReader<Cnab400> multiResourceItemReader(FlatFileItemReader<Cnab400> cnabReader) throws IOException {
+        MultiResourceItemReader<Cnab400> reader = new MultiResourceItemReader<>();
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
+
+        reader.setResources(resolver.getResources("file:%s/tmp/*.rem".formatted(DIR)));
+        reader.setDelegate(cnabReader);
+        return reader;
+    }
+
+    @Bean
+    CnabReader<Cnab400> cnabReader() {
         var cnab = new CnabReader<Cnab400>();
         cnab.setStrict(false);
-        cnab.setResource(new PathResource(resource));
         cnab.setName("CUSTOM_CNAB_READER");
         cnab.setLineMapper(lineMapper());
         return cnab;
     }
-
 
     @Bean
     JdbcBatchItemWriter<Cnab> writerCnab(DataSource dataSource) {
