@@ -28,44 +28,49 @@ repositories {
 //    buildArgs(['JAR_FILE':"app.jar"])
 //}
 
+ext {
+    set('springCloudVersion', "2022.0.4")
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.boot:spring-boot-starter-quartz'
     implementation 'org.springframework.batch:spring-batch-integration:5.0.3'
-
+    //VALIDATION
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     // Database dependencies
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.1.4'
     implementation 'com.mysql:mysql-connector-j:8.1.0'
     implementation 'com.microsoft.sqlserver:mssql-jdbc:11.2.3.jre17'
     implementation 'com.mchange:c3p0:0.9.5.5'
-
     //CACHE
     implementation 'org.ehcache:ehcache:3.10.8'
     implementation 'org.hibernate.orm:hibernate-jcache:6.3.0.Final'
-
     //OBSERVABILITY
     implementation 'org.springframework.boot:spring-boot-starter-actuator:3.1.5'
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'io.micrometer:micrometer-tracing-bridge-otel'
     implementation 'io.opentelemetry:opentelemetry-exporter-zipkin'
-
     //SWAGGER
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
-
     //OPENFEIGN
-    implementation 'org.springframework.cloud:spring-cloud-starter-feign:1.4.7.RELEASE'
-
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     //LOMBOK
     compileOnly 'org.projectlombok:lombok:1.18.30'
     annotationProcessor 'org.projectlombok:lombok:1.18.30'
     testCompileOnly 'org.projectlombok:lombok:1.18.30'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
-
     //TEST
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.batch:spring-batch-test'
     testImplementation 'com.h2database:h2'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 tasks.named('bootBuildImage') {

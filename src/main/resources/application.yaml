@@ -60,23 +60,17 @@ spring:
     open-in-view: false
     show-sql: true
     properties:
-      jakarta:
-        persistence:
-          sharedCache:
-            mode: ENABLE_SELECTIVE
+      jakarta.persistence.sharedCache.mode: ENABLE_SELECTIVE
       hibernate:
         format_sql: true
         generate_statistics: false
         order_inserts: true
         order_updates: true
+        javax.cache.provider: "org.ehcache.jsr107.EhcacheCachingProvider"
         session:
           events:
-            log.LOG_QUERIES_SLOWER_THAN_MS: 15
-          region:
-            factory_class: jcache
-        javax:
-          cache:
-            provider: "org.ehcache.jsr107.EhcacheCachingProvider"
+            log.LOG_QUERIES_SLOWER_THAN_MS: 150
+          region.factory_class: jcache
   #            uri: "file:ehcache/xml"
   sql:
     init:

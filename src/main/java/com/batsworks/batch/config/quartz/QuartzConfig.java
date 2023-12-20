@@ -55,7 +55,7 @@ public class QuartzConfig {
     public Trigger trigger() {
         SimpleScheduleBuilder simpleScheduleBuilder = SimpleScheduleBuilder
                 .simpleSchedule()
-                .withIntervalInSeconds(20)
+                .withIntervalInMinutes(5)
                 .repeatForever();
 
         return TriggerBuilder.newTrigger()

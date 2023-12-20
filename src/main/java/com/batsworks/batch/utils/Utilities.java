@@ -74,7 +74,7 @@ public class Utilities {
     }
 
     public static String resolveFileName(String file, Boolean findCode) {
-        if (file == null) return file;
+        if (file == null) return null;
         var index = file.lastIndexOf(isNull(prefix) ? "_" : prefix);
         if (index == -1) return file;
         if (findCode) {

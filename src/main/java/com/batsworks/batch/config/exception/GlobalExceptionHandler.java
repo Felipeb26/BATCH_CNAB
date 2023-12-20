@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.batsworks.batch.utils.Utilities.deleteFile;
+import static java.util.Objects.isNull;
 
 
 @Slf4j
@@ -49,6 +50,7 @@ public class GlobalExceptionHandler {
         deleteFile(System.getProperty("user.dir").concat("/tmp"));
         return new ResponseEntity<>(BussinesExceptionEntity.builder()
                 .error(bussinesException.getMessage())
+                .status(isNull(bussinesException.getStatusEnum()) ? StatusEnum.UNKNOW_ERROR : bussinesException.getStatusEnum())
                 .arguments(bussinesException.getArgs())
                 .time(LocalDateTime.now().format(formatter))
                 .path(httpServletRequest.getServletPath())

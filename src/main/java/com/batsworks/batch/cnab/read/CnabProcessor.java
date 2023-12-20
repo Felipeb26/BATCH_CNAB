@@ -1,5 +1,6 @@
 package com.batsworks.batch.cnab.read;
 
+import com.batsworks.batch.client.ServiceClient;
 import com.batsworks.batch.domain.enums.Zones;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
@@ -10,17 +11,22 @@ import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.BeforeStep;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static com.batsworks.batch.utils.Utilities.resolveFileName;
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Slf4j
 public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
 
     @Autowired
     private ArquivoRepository arquivoRepository;
+    @Autowired
+    private ServiceClient serviceClient;
     private Long id;
     private JobParameters map;
 
@@ -38,11 +44,19 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         if (isNull(cnab.controleParticipante()) || cnab.controleParticipante().isBlank()) return null;
 
         var arquivo = arquivoRepository.findById(id);
-        log.info("==========================> START PROCESSING FILE AT {}", map.getString("time"));
 
         decisaoPorOcorrencia(cnab.identificacaoOcorrencia());
 
+        ResponseEntity<Object> response = null;
+        try{
+           response = serviceClient.findWallById(2L);
+        }catch (Exception e){
+            if(nonNull(response))
+                log.info("ERROR {}", response.getStatusCode());
+            log.error(e.getMessage());
+        }
 
+        log.info("==========================> FINISHING PROCESSING LINE AT {}", map.getString("time"));
         var dataCadastro = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
         return new Cnab(null, cnab.identRegistro(), cnab.agenciaDebito(), cnab.digitoAgencia(), cnab.razaoAgencia(), cnab.contaCorrente(), cnab.digitoConta(), cnab.identBeneficiario(),
                 cnab.controleParticipante(), cnab.codigoBanco(), cnab.campoMulta(), cnab.percentualMulta(), cnab.nossoNumero(), cnab.digitoConferenciaNumeroBanco(),
