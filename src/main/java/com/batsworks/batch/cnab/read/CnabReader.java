@@ -1,9 +1,7 @@
-package com.batsworks.batch.config.cnab;
+package com.batsworks.batch.cnab.read;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.file.FlatFileItemReader;
 
-@Slf4j
 public class CnabReader<T> extends FlatFileItemReader<T> {
 
     @Override

@@ -1,16 +1,16 @@
-package com.batsworks.batch.config.utils;
+package com.batsworks.batch.domain.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class BatchParameters {
 
-    private Map<String, Object> parameters = new HashMap<>();
+    private Map<String, Object> parameters;
+
 }

@@ -18,6 +18,7 @@ public class BussinesExceptionEntity {
     private String time;
     private String error;
     private Object[] arguments;
+    private StatusEnum status;
 
     public void setTime(String time) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");

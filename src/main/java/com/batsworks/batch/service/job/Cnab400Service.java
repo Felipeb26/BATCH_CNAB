@@ -52,6 +52,12 @@ public class Cnab400Service {
         return new JobBuilder("CNAB_400_JOB_" + date.get(Calendar.SECOND), jobRepository)
                 .flow(masterStepCnab)
                 .next(updateSituacaoCnab())
+    @Bean()
+    Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner, CnabJobListener cnabJobListener) {
+        return new JobBuilder("CNAB_400_JOB", jobRepository)
+                .listener(cnabSkipListenner)
+                .listener(cnabJobListener)
+                .flow(step)
                 .end()
                 .build();
     }
@@ -92,24 +98,13 @@ public class Cnab400Service {
     }
 
     @Bean
-    CnabTasklet cnabTasklet() {
-        return new CnabTasklet();
-    }
-
-    @Bean
-    @StepScope
-    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['path']}") String resource) {
+    CnabReader<Cnab400> cnabReader() {
         var cnab = new CnabReader<Cnab400>();
         cnab.setStrict(false);
         cnab.setResource(new PathResource(resource));
         cnab.setName("CUSTOM_CNAB_READER");
         cnab.setLineMapper(lineMapper());
         return cnab;
-    }
-
-    @Bean
-    CnabProcessor processor() {
-        return new CnabProcessor();
     }
 
     @Bean
@@ -135,18 +130,13 @@ public class Cnab400Service {
 
         FixedLengthTokenizer lineTokenizer = new FixedLengthTokenizer();
         lineTokenizer.setStrict(false);
-        lineTokenizer.setNames("identRegistro", "agenciaDebito", "digitoAgencia",
-                "razaoAgencia", "contaCorrente", "digitoConta",
-                "identBeneficiario", "controleParticipante", "codigoBanco",
-                "campoMulta", "percentualMulta", "nossoNumero",
-                "digitoConferenciaNumeroBanco", "descontoDia", "condicaoEmpissaoPapeladaCobranca",
-                "boletoDebitoAutomatico", "identificacaoOcorrencia", "numeroDocumento",
-                "dataVencimento", "valorTitulo", "especieTitulo",
-                "dataEmissao", "primeiraInstrucao", "segundaInstrucao",
-                "moraDia", "dataLimiteDescontoConcessao", "valorDesconto",
-                "valorIOF", "valorAbatimento", "tipoPagador",
-                "nomePagador", "endereco", "primeiraMensagem",
-                "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro");
+        lineTokenizer.setNames("identRegistro", "agenciaDebito", "digitoAgencia", "razaoAgencia",
+                "contaCorrente", "digitoConta", "identBeneficiario", "controleParticipante",
+                "codigoBanco", "campoMulta", "percentualMulta", "nossoNumero", "digitoConferenciaNumeroBanco",
+                "descontoDia", "condicaoEmpissaoPapeladaCobranca", "boletoDebitoAutomatico", "identificacaoOcorrencia",
+                "numeroDocumento", "dataVencimento", "valorTitulo", "especieTitulo", "dataEmissao", "primeiraInstrucao",
+                "segundaInstrucao", "moraDia", "dataLimiteDescontoConcessao", "valorDesconto", "valorIOF", "valorAbatimento",
+                "tipoPagador", "nomePagador", "endereco", "primeiraMensagem", "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro");
 
         lineTokenizer.setColumns(new Range(1, 1), new Range(2, 6), new Range(7, 7), new Range(8, 12), new Range(13, 19),
                 new Range(20, 20), new Range(21, 37), new Range(38, 52), new Range(63, 65), new Range(66, 66),
@@ -168,10 +158,10 @@ public class Cnab400Service {
      * TaskExecutor executa de forma asycrona - multithread
      **/
     @Bean
-    JobLauncher jobLauncherAsync(JobRepository repository) throws Exception {
+    JobLauncher jobLauncherAsync(JobRepository repository, TaskExecutor taskExecutor) throws Exception {
         var jobLauncher = new TaskExecutorJobLauncher();
         jobLauncher.setJobRepository(repository);
-        jobLauncher.setTaskExecutor(taskExecutor());
+        jobLauncher.setTaskExecutor(taskExecutor);
         jobLauncher.afterPropertiesSet();
         return jobLauncher;
     }
@@ -205,16 +195,5 @@ public class Cnab400Service {
         return taskExecutorPartitionHandler;
     }
 
-//    @Bean
-//    CnabMultiResource cnabMultiResource() {
-//        var cnabMultiResource = new CnabMultiResource();
-//        if (cnabReader().getResource() != null) {
-//            var byteArrayResources = of(cnabReader().getResource());
-//            Resource[] resources = new Resource[]{};
-//            byteArrayResources.toArray(resources);
-//            cnabMultiResource.setResources(resources);
-//        }
-//        return cnabMultiResource;
-//    }
 
 }

@@ -1,8 +1,8 @@
-package com.batsworks.batch.config.cnab;
+package com.batsworks.batch.cnab.read;
 
 
 import com.batsworks.batch.config.exception.CnabException;
-import com.batsworks.batch.config.utils.BatchParameters;
+import com.batsworks.batch.domain.entity.BatchParameters;
 import com.batsworks.batch.domain.entity.CnabErro;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.repository.CnabErroRepository;
@@ -56,7 +56,7 @@ public class CnabSkipPolicy implements SkipPolicy {
         } else {
             log.error("AN UNCOMMON ERROR HAS HAPPEN: {}", t.getMessage());
         }
-        return false;
+        return true;
     }
 
     private boolean startWith(String compare) {

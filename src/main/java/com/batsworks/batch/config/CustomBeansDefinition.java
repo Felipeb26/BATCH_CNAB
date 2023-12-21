@@ -1,34 +1,23 @@
 package com.batsworks.batch.config;
 
-import com.batsworks.batch.config.cnab.CnabSkipListenner;
-import com.batsworks.batch.config.cnab.CnabSkipPolicy;
-import com.batsworks.batch.config.utils.BatchParameters;
-import com.batsworks.batch.config.utils.LoggingRequestInterceptor;
+import com.batsworks.batch.cnab.read.CnabJobListener;
+import com.batsworks.batch.cnab.read.CnabProcessor;
+import com.batsworks.batch.cnab.read.CnabSkipListenner;
+import com.batsworks.batch.cnab.read.CnabSkipPolicy;
+import com.batsworks.batch.domain.entity.BatchParameters;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.BufferingClientHttpRequestFactory;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
 public class CustomBeansDefinition {
-
-    @Bean
-    RestTemplate restTemplate() {
-        RestTemplate restTemplate = new RestTemplate(new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()));
-        List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
-        interceptors.add(new LoggingRequestInterceptor());
-        restTemplate.setInterceptors(interceptors);
-        return restTemplate;
-    }
 
     @Bean
     SkipPolicy skipPolicy() {
@@ -38,6 +27,16 @@ public class CustomBeansDefinition {
     @Bean
     CnabSkipListenner cnabSkipListenner() {
         return new CnabSkipListenner();
+    }
+
+    @Bean
+    CnabJobListener cnabJobListener() {
+        return new CnabJobListener();
+    }
+
+    @Bean
+    CnabProcessor processor() {
+        return new CnabProcessor();
     }
 
     @Bean
@@ -51,4 +50,14 @@ public class CustomBeansDefinition {
         return new BatchParameters();
     }
 
+    @Bean
+    TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setMaxPoolSize(8);
+        taskExecutor.setCorePoolSize(8);
+        taskExecutor.setQueueCapacity(10);
+        taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
+        taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        return taskExecutor;
+    }
 }

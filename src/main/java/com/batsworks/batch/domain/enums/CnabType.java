@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 public enum CnabType {
 
     CNAB400("400"),
-    CNAB200("200");
+    CNAB240("240");
 
     private final String type;
 }

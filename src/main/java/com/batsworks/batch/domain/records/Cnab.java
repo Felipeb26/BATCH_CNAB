@@ -8,7 +8,7 @@ import java.sql.Date;
 import java.text.ParseException;
 import java.time.LocalDateTime;
 
-import static com.batsworks.batch.config.utils.Utilities.parseDate;
+import static com.batsworks.batch.utils.Formats.parseDate;
 
 public record Cnab(
         Integer id,

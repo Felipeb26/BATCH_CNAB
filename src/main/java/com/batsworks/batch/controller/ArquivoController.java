@@ -1,6 +1,5 @@
 package com.batsworks.batch.controller;
 
-import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.service.CnabService;
@@ -11,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import static com.batsworks.batch.utils.Files.randomFileName;
 
 @RestController
 @RequestMapping("/v1/arquivo")
@@ -33,15 +34,15 @@ public class ArquivoController {
 
 
         return ResponseEntity.ok()
-                .header("Content-Disposition", "attachment; filename=%s".formatted(Utilities.randomFileName()))
+                .header("Content-Disposition", "attachment; filename=%s".formatted(randomFileName()))
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(response.length)
                 .body(response);
     }
 
-    @GetMapping("/")
-    public String string() {
-        return service.string();
+    @GetMapping("/{id}")
+    public Object string(@PathVariable Long id) {
+        return service.string(id);
     }
 
     @GetMapping("/reset")

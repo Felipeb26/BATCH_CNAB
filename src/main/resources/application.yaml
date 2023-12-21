@@ -4,6 +4,13 @@ logging:
     'org.hibernate.stat': debug
     'com.h2database:h2': info
     'com.batsworks.batch.config.utils': debug
+    'com.batsworks.batch': debug
+
+server:
+  compression:
+    enabled: true
+    mime-types: application/json, application/xml,text/html,image/jpeg
+
 
 management:
   endpoint:
@@ -19,7 +26,7 @@ management:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: ${ZIPKIN_HTTP}://${ZIPKIN_HOST}:${ZIPKIN_PORT}/api/v2/spans
+      endpoint: ${ZIPKIN_HTTP:http}://${ZIPKIN_HOST:localhost}:${ZIPKIN_PORT:9411}/api/v2/spans
 
 
 spring:
@@ -34,54 +41,53 @@ spring:
     job:
       enabled: false
   datasource:
-    #url: jdbc:sqlserver://serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
-    #driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    #username: SA
-    #password: Felipe@2001
-    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    #    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+    #    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    #    username: SA
+    #    password: Felipe@2001
+    url: jdbc:mysql://172.23.155.68:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password:
+    username: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     #    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
       ddl-auto: none
       jdbc.batch_size: 30
-      #dialect: org.hibernate.dialect.SQLServerDialect
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     open-in-view: false
     show-sql: true
     properties:
-      jakarta:
-        persistence:
-          sharedCache:
-            mode: ENABLE_SELECTIVE
+      jakarta.persistence.sharedCache.mode: ENABLE_SELECTIVE
       hibernate:
         format_sql: false
         generate_statistics: false
         order_inserts: true
         order_updates: true
+        javax.cache.provider: "org.ehcache.jsr107.EhcacheCachingProvider"
         session:
           events:
-            log.LOG_QUERIES_SLOWER_THAN_MS: 15
-          region:
-            factory_class: jcache
-        javax:
-          cache:
-            provider: "org.ehcache.jsr107.EhcacheCachingProvider"
+            log.LOG_QUERIES_SLOWER_THAN_MS: 150
+          region.factory_class: jcache
   #            uri: "file:ehcache/xml"
   sql:
     init:
-      mode: ALWAYS
+      mode: NEVER
   h2:
     console:
       enabled: true
+org:
+  quartz:
+    jobStore.class: org.quartz.simpl.RAMJobStore
+    scheduler.instanceName: BATCH_CNAB
+    threadPool.threadCount: 3
 
 configuration:
   max_size: 3000
   default_folder: tmp
+  code_prefix: _
 
 documentation:
   title: ${spring.application.name}
