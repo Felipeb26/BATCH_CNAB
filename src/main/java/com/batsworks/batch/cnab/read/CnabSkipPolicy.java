@@ -4,6 +4,7 @@ package com.batsworks.batch.cnab.read;
 import com.batsworks.batch.config.exception.CnabException;
 import com.batsworks.batch.domain.entity.BatchParameters;
 import com.batsworks.batch.domain.entity.CnabErro;
+import com.batsworks.batch.domain.enums.JobParamsEnum;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.repository.CnabErroRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * A linha que mostra no log assim como a salva nem sempre é a verdadeira já
@@ -30,8 +32,8 @@ public class CnabSkipPolicy implements SkipPolicy {
 
     @Override
     public boolean shouldSkip(Throwable t, long skipCount) throws SkipLimitExceededException {
-        var parameters = batchParameters.getParameters();
-        Long id = (long) parameters.get("id");
+        Map<String, Object> parameters = batchParameters.getParameters();
+        Long id = (long) parameters.get(JobParamsEnum.ID.param());
 
         if (t instanceof FlatFileParseException parseException) {
             var line = startWith(parseException.getInput());

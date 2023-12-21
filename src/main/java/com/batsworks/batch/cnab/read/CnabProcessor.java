@@ -2,6 +2,7 @@ package com.batsworks.batch.cnab.read;
 
 import com.batsworks.batch.client.ServiceClient;
 import com.batsworks.batch.config.exception.BussinesException;
+import com.batsworks.batch.domain.enums.JobParamsEnum;
 import com.batsworks.batch.domain.enums.Zones;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
@@ -34,10 +35,10 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
     @BeforeStep
     public void beforeStep(StepExecution stepExecution) {
         map = stepExecution.getJobParameters();
-        var path = map.getString("path");
+        var path = map.getString(JobParamsEnum.PATH.param());
         path = resolveFileName(path, true);
-        id = map.getLong("id");
-        log.info("==========================> START PROCESSING FILE {} AT {}", path, map.getString("time"));
+        id = map.getLong(JobParamsEnum.ID.param());
+        log.info("==========================> START PROCESSING FILE {} AT {}", path, map.getString(JobParamsEnum.TIME.param()));
     }
 
     @Override
@@ -48,16 +49,15 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
 
         decisaoPorOcorrencia(cnab.identificacaoOcorrencia());
 
-        ResponseEntity<Object> response = null;
-        try {
-            response = serviceClient.findWallById(2L);
-        } catch (BussinesException bussines) {
-            throw new BussinesException(bussines.getStatusCode(), bussines.getMessage(), bussines.getStatusEnum());
-        } catch (Exception e) {
-            throw new BussinesException(INTERNAL_SERVER_ERROR, e.getMessage(), UNKNOW_ERROR);
-        }
+//        try {
+//            ResponseEntity<Object> response = serviceClient.findWallById();
+//        } catch (BussinesException bussines) {
+//            throw new BussinesException(bussines.getStatusCode(), bussines.getMessage(), bussines.getStatusEnum());
+//        } catch (Exception e) {
+//            log.error("ERROR: {}", e.getMessage());
+//        }
 
-        log.info("==========================> FINISHING PROCESSING LINE AT {}", map.getString("time"));
+        log.info("==========================> FINISHING PROCESSING LINE AT {}", map.getString(JobParamsEnum.TIME.param()));
         var dataCadastro = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
         return new Cnab(null, cnab.identRegistro(), cnab.agenciaDebito(), cnab.digitoAgencia(), cnab.razaoAgencia(), cnab.contaCorrente(), cnab.digitoConta(), cnab.identBeneficiario(),
                 cnab.controleParticipante(), cnab.codigoBanco(), cnab.campoMulta(), cnab.percentualMulta(), cnab.nossoNumero(), cnab.digitoConferenciaNumeroBanco(),

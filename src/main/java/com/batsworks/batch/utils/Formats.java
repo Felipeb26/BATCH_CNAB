@@ -7,6 +7,8 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
@@ -22,8 +24,9 @@ public class Formats {
             value = value.concat("_" + arg);
         }
         value = value.trim();
-        return UUID.randomUUID() +"@"+ encodeByteToBASE64String(value.getBytes(StandardCharsets.UTF_8)).concat(".rem");
+        return UUID.randomUUID() + "@" + encodeByteToBASE64String(value.getBytes(StandardCharsets.UTF_8)).concat(".rem");
     }
+
     public static String actualDateString() {
         var date = Calendar.getInstance();
         return String.format(
@@ -56,4 +59,14 @@ public class Formats {
         return Base64.getDecoder().decode(data);
     }
 
+
+    public static String durationBetween(LocalDateTime dateTime1, LocalDateTime dateTime2) {
+        Duration duration = Duration.between(dateTime1, dateTime2);
+        long days = duration.toDays();
+        long hours = duration.toHours() % 24;
+        long minutes = duration.toMinutes() % 60;
+        long seconds = duration.getSeconds() % 60;
+        long millis = duration.toMillis();
+        return "Duration: " + days + " days, " + hours + " hours, " + minutes + " minutes, " + seconds + " seconds, " + millis + " milliseconds";
+    }
 }

@@ -1,14 +1,12 @@
 package com.batsworks.batch.service;
 
 import com.batsworks.batch.config.exception.BussinesException;
-import com.batsworks.batch.config.utils.BatchParameters;
-import com.batsworks.batch.config.utils.Compress;
-import com.batsworks.batch.config.utils.Utilities;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.enums.Status;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -79,18 +77,12 @@ public class CnabService {
             if (optionalString.isEmpty())
                 throw new BussinesException(BAD_REQUEST, "Arquivo não encontrado", new Object[]{Status.DOWNLOAD_ERROR});
 
-            var arquivo = optionalString.get();
-
             var jobParameters = new JobParametersBuilder()
                     .addJobParameter("download_cnab", randomFileName(), String.class, false)
                     .addJobParameter("TIME", actualDateString(), String.class)
                     .addJobParameter("id", idArquivo, Long.class)
                     .toJobParameters();
             asyncWrite.run(jobWriteCnab, jobParameters);
-//            var data = decompressData(arquivo);
-//            if (data.length == 0) {
-//                throw new BussinesException(BAD_REQUEST, "An error has happen while unzipping the file!", new Object[]{Status.DOWNLOAD_ERROR});
-//            }
             return new byte[0];
         } catch (Exception e) {
             log.error("log: {}", e.getMessage());

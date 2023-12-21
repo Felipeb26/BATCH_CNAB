@@ -47,20 +47,22 @@ public class ServiceClientConfiguration {
         public BussinesException decode(final String methodKey, Response response) {
             String message = null;
             try {
-                if (response != null) {
+                if (nonNull(response)) {
                     message = stringDecoder.decode(response, String.class).toString();
                     if (response.status() > 400)
                         message = response.reason();
 
                     String url = response.request().url();
                     log.info("URL: {} \tMESSGAE: {}", url, message);
-                    if (nonNull(message) && !message.isBlank())
-                        return new BussinesException(HttpStatusCode.valueOf(response.status()), message);
-                    return new BussinesException(HttpStatusCode.valueOf(response.status()), nonNull(response.headers()) ? response.headers().toString() : StatusEnum.UNKNOW_ERROR.getError());
+                    if (nonNull(response.headers())) {
+                        if (nonNull(message) && !message.isBlank())
+                            return new BussinesException(HttpStatusCode.valueOf(response.status()), message);
+                        return new BussinesException(HttpStatusCode.valueOf(response.status()), response.body().toString());
+                    }
                 }
-            } catch (IOException ioex) {
-                log.error(ioex.getMessage(), ioex);
-                return new BussinesException(HttpStatusCode.valueOf(response.status()), "UNKNOW_ERROR");
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+                return new BussinesException(HttpStatus.SERVICE_UNAVAILABLE, "UNKNOW_ERROR");
             }
             return new BussinesException(HttpStatus.SERVICE_UNAVAILABLE, "UNKNOW_ERROR");
         }

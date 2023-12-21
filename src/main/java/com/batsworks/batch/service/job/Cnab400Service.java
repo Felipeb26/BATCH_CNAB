@@ -1,23 +1,21 @@
 package com.batsworks.batch.service.job;
 
-import com.batsworks.batch.config.cnab.*;
-import com.batsworks.batch.config.partitioner.ColumnRangePartitioner;
+import com.batsworks.batch.cnab.read.*;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
-import org.springframework.batch.core.configuration.annotation.JobScope;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
-import org.springframework.batch.core.partition.PartitionHandler;
-import org.springframework.batch.core.partition.support.TaskExecutorPartitionHandler;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.skip.SkipPolicy;
+import org.springframework.batch.integration.async.AsyncItemProcessor;
+import org.springframework.batch.integration.async.AsyncItemWriter;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
@@ -31,27 +29,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.PathResource;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.util.Calendar;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.Future;
 
 @Configuration
 @EnableBatchProcessing
 @RequiredArgsConstructor
 public class Cnab400Service {
 
+
+    private static final String DIR = System.getProperty("user.dir");
     private final PlatformTransactionManager platformTransactionManager;
     private final JobRepository repository;
 
-    @Bean
-    Job jobCnab(Step masterStepCnab, JobRepository jobRepository) {
-        var date = Calendar.getInstance();
-        return new JobBuilder("CNAB_400_JOB_" + date.get(Calendar.SECOND), jobRepository)
-                .flow(masterStepCnab)
-                .next(updateSituacaoCnab())
     @Bean()
     Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner, CnabJobListener cnabJobListener) {
         return new JobBuilder("CNAB_400_JOB", jobRepository)
@@ -62,43 +54,23 @@ public class Cnab400Service {
                 .build();
     }
 
-    /**
-     * Dois steps foram setados 1 master e 1 minor, o master como principal e o minor como responsavel pelo restante particionado
-     **/
     @Bean
-    @JobScope
-    Step masterStepCnab(Step minorStepCnab) {
-        return new StepBuilder("CNAB_400_MASTER_STEP", repository)
-                .partitioner(minorStepCnab.getName(), columnRangePartitioner())
-                .partitionHandler(partitionHandler(minorStepCnab))
-                .allowStartIfComplete(true)
-                .build();
-    }
-
-    @Bean
-    Step minorStepCnab(CnabReader<Cnab400> cnabReader, ItemWriter<Cnab> writerCnab, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
+    Step step(CnabReader<Cnab400> cnabReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor, SkipPolicy skipPolicy) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
-                .<Cnab400, Cnab>chunk(500, platformTransactionManager)
+                .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
                 .reader(cnabReader)
-                .processor(processor())
-                .writer(writerCnab)
+                .processor(asyncItemProcessor)
+                .writer(asyncItemWriter)
                 .faultTolerant()
                 .skipPolicy(skipPolicy)
-                .listener(processor())
-                .listener(cnabSkipListenner)
+                .listener(processor)
                 .build();
     }
 
     @Bean
-    Step updateSituacaoCnab() {
-        return new StepBuilder("CNAB_400_ATUALIZACAO_ARQUIVO", repository)
-                .tasklet(cnabTasklet(), platformTransactionManager)
-                .build();
-    }
-
-    @Bean
-    CnabReader<Cnab400> cnabReader() {
+    @StepScope
+    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['PATH']}") String resource) {
         var cnab = new CnabReader<Cnab400>();
         cnab.setStrict(false);
         cnab.setResource(new PathResource(resource));
@@ -167,33 +139,18 @@ public class Cnab400Service {
     }
 
     @Bean
-    TaskExecutor taskExecutor() {
-        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
-        taskExecutor.setMaxPoolSize(8);
-        taskExecutor.setCorePoolSize(8);
-        taskExecutor.setQueueCapacity(12);
-        taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
-        taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-        return taskExecutor;
-    }
-
-    /**
-     * Particiona para usar uma quantidade especificada de threads para usar de parallelismo
-     * para maior velocidade em arquivos grandes
-     **/
-    @Bean
-    ColumnRangePartitioner columnRangePartitioner() {
-        return new ColumnRangePartitioner();
+    public AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor(TaskExecutor taskExecutor, CnabProcessor processor) {
+        var asyncItemProcessor = new AsyncItemProcessor<Cnab400, Cnab>();
+        asyncItemProcessor.setDelegate(processor);
+        asyncItemProcessor.setTaskExecutor(taskExecutor);
+        return asyncItemProcessor;
     }
 
     @Bean
-    PartitionHandler partitionHandler(Step minorStepCnab) {
-        TaskExecutorPartitionHandler taskExecutorPartitionHandler = new TaskExecutorPartitionHandler();
-        taskExecutorPartitionHandler.setGridSize(6);
-        taskExecutorPartitionHandler.setTaskExecutor(taskExecutor());
-        taskExecutorPartitionHandler.setStep(minorStepCnab);
-        return taskExecutorPartitionHandler;
+    public AsyncItemWriter<Cnab> asyncItemWriter(ItemWriter<Cnab> writerCnab) {
+        var asyncWritter = new AsyncItemWriter<Cnab>();
+        asyncWritter.setDelegate(writerCnab);
+        return asyncWritter;
     }
-
 
 }

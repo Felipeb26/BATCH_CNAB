@@ -35,8 +35,8 @@ ext {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-batch'
-    implementation 'org.springframework.boot:spring-boot-starter-quartz'
-    implementation 'org.springframework.batch:spring-batch-integration:5.0.3'
+    implementation 'org.springframework.batch:spring-batch-integration'
+    implementation 'org.springframework.integration:spring-integration-file'
     //VALIDATION
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     // Database dependencies
