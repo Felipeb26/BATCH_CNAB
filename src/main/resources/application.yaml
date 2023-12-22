@@ -11,7 +11,6 @@ server:
     enabled: true
     mime-types: application/json, application/xml,text/html,image/jpeg
 
-
 management:
   endpoint:
     health:
@@ -27,7 +26,6 @@ management:
   zipkin:
     tracing:
       endpoint: ${ZIPKIN_HTTP:http}://${ZIPKIN_HOST:localhost}:${ZIPKIN_PORT:9411}/api/v2/spans
-
 
 spring:
   application:
@@ -78,6 +76,7 @@ spring:
   h2:
     console:
       enabled: true
+
 org:
   quartz:
     jobStore.class: org.quartz.simpl.RAMJobStore

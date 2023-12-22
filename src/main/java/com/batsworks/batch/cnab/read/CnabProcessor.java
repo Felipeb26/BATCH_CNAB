@@ -48,9 +48,10 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
 
         decisaoPorOcorrencia(cnab.identificacaoOcorrencia());
 
-        ResponseEntity<Object> response = null;
+       final ResponseEntity<Object> response;
         try {
-            response = serviceClient.findWallById(2L);
+            response = serviceClient.findWallById();
+            log.info("STATUS CODE {}",response.getStatusCode());
         } catch (BussinesException bussines) {
             throw new BussinesException(bussines.getStatusCode(), bussines.getMessage(), bussines.getStatusEnum());
         } catch (Exception e) {
