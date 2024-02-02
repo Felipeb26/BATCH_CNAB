@@ -39,7 +39,51 @@ public record Cnab400(
         String cep,
         String sufixoCEP,
         String segundaMensagem,
-        String sequencialRegistro
+        String sequencialRegistro,
+        int line
 ) {
+
+   public Cnab400 withLine(int line) {
+        return new Cnab400(
+                this.identRegistro,
+                this.agenciaDebito,
+                this.digitoAgencia,
+                this.razaoAgencia,
+                this.contaCorrente,
+                this.digitoConta,
+                this.identBeneficiario,
+                this.controleParticipante,
+                this.codigoBanco,
+                this.campoMulta,
+                this.percentualMulta,
+                this.nossoNumero,
+                this.digitoConferenciaNumeroBanco,
+                this.descontoDia,
+                this.condicaoEmpissaoPapeladaCobranca,
+                this.boletoDebitoAutomatico,
+                this.identificacaoOcorrencia,
+                this.numeroDocumento,
+                this.dataVencimento,
+                this.valorTitulo,
+                this.especieTitulo,
+                this.dataEmissao,
+                this.primeiraInstrucao,
+                this.segundaInstrucao,
+                this.moraDia,
+                this.dataLimiteDescontoConcessao,
+                this.valorDesconto,
+                this.valorIOF,
+                this.valorAbatimento,
+                this.tipoPagador,
+                this.nomePagador,
+                this.endereco,
+                this.primeiraMensagem,
+                this.cep,
+                this.sufixoCEP,
+                this.segundaMensagem,
+                this.sequencialRegistro,
+                line
+        );
+    }
 
 }

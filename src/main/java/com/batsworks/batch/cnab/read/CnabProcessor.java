@@ -2,6 +2,7 @@ package com.batsworks.batch.cnab.read;
 
 import com.batsworks.batch.client.ServiceClient;
 import com.batsworks.batch.config.exception.BussinesException;
+import com.batsworks.batch.config.exception.CnabException;
 import com.batsworks.batch.domain.enums.Zones;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
@@ -16,10 +17,8 @@ import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
 
-import static com.batsworks.batch.config.exception.StatusEnum.UNKNOW_ERROR;
 import static com.batsworks.batch.utils.Files.resolveFileName;
 import static java.util.Objects.isNull;
-import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 
 @Slf4j
 public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
@@ -48,14 +47,14 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
 
         decisaoPorOcorrencia(cnab.identificacaoOcorrencia());
 
-       final ResponseEntity<Object> response;
+        final ResponseEntity<Object> response;
         try {
             response = serviceClient.findWallById();
-            log.info("STATUS CODE {}",response.getStatusCode());
+            log.info("STATUS CODE {}", response.getStatusCode());
         } catch (BussinesException bussines) {
-            throw new BussinesException(bussines.getStatusCode(), bussines.getMessage(), bussines.getStatusEnum());
+            throw new CnabException(bussines.getMessage(), cnab.line());
         } catch (Exception e) {
-            throw new BussinesException(INTERNAL_SERVER_ERROR, e.getMessage(), UNKNOW_ERROR);
+            log.info(e.getMessage());
         }
 
         log.info("==========================> FINISHING PROCESSING LINE AT {}", map.getString("time"));

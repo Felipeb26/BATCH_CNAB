@@ -67,17 +67,3 @@ CREATE TABLE IF NOT EXISTS cnab(
     dataCadastro datetime,
     foreign key (idArquivo) references arquivo(id)
 );
-
-CREATE TABLE IF NOT EXISTS transacao(
-    id SERIAL primary key,
-    tipo int,
-    data date,
-    valor decimal,
-    cpf bigint,
-    cartao varchar(255),
-    hora time,
-    donoLoja varchar(255),
-    nomeLoja varchar(255),
-    dataCadastro datetime
-);
-ALTER TABLE arquivo ADD observacao NULL;

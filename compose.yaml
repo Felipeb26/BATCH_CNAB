@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  mysql:
+    image: mysql/mysql-server
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+  batch:
+    depends_on:
+      - mysql
+    build:
+      dockerfile: dockerfile
+    image: batch-cnab
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DB_PASS: secret
+      DB_USER: root
+      ZIPKIN_HOST: localhost
+      ZIPKIN_HTTP: http
+      ZIPKIN_PORT: 9411

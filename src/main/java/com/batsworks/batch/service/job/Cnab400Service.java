@@ -54,7 +54,7 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step step(MultiResourceItemReader<Cnab400> multiResourceItemReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor, SkipPolicy skipPolicy) {
+    Step step(MultiResourceItemReader<Cnab400> multiResourceItemReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
@@ -64,6 +64,7 @@ public class Cnab400Service {
                 .faultTolerant()
                 .skipPolicy(skipPolicy)
                 .listener(processor)
+                .listener(cnabSkipListenner)
                 .build();
     }
 
