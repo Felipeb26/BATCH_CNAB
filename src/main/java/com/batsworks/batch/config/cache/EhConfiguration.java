@@ -31,7 +31,7 @@ public class EhConfiguration {
 
     private CacheConfiguration<Object, Object> cacheConfiguration() {
         return CacheConfigurationBuilder.newCacheConfigurationBuilder(Object.class, Object.class,
-                        ResourcePoolsBuilder.heap(5).offheap(1, MemoryUnit.MB))
+                        ResourcePoolsBuilder.heap(5).offheap(5, MemoryUnit.MB))
                 .withExpiry(new ExpiryPolicy<>() {
                     @Override
                     public Duration getExpiryForCreation(Object key, Object value) {

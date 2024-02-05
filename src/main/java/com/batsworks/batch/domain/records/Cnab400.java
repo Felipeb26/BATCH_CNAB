@@ -40,7 +40,7 @@ public record Cnab400(
         String sufixoCEP,
         String segundaMensagem,
         String sequencialRegistro,
-        int line
+        String line
 ) {
 
    public Cnab400 withLine(int line) {
@@ -82,7 +82,7 @@ public record Cnab400(
                 this.sufixoCEP,
                 this.segundaMensagem,
                 this.sequencialRegistro,
-                line
+                String.valueOf(line)
         );
     }
 

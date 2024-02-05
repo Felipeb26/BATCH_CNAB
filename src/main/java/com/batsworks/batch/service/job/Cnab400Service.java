@@ -117,7 +117,7 @@ public class Cnab400Service {
                 "descontoDia", "condicaoEmpissaoPapeladaCobranca", "boletoDebitoAutomatico", "identificacaoOcorrencia",
                 "numeroDocumento", "dataVencimento", "valorTitulo", "especieTitulo", "dataEmissao", "primeiraInstrucao",
                 "segundaInstrucao", "moraDia", "dataLimiteDescontoConcessao", "valorDesconto", "valorIOF", "valorAbatimento",
-                "tipoPagador", "nomePagador", "endereco", "primeiraMensagem", "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro");
+                "tipoPagador", "nomePagador", "endereco", "primeiraMensagem", "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro", "line");
 
         lineTokenizer.setColumns(new Range(1, 1), new Range(2, 6), new Range(7, 7), new Range(8, 12), new Range(13, 19),
                 new Range(20, 20), new Range(21, 37), new Range(38, 52), new Range(63, 65), new Range(66, 66),
@@ -135,7 +135,7 @@ public class Cnab400Service {
     }
 
     /**
-     * JobLauncher é chamado pelo endpoint de forma assyncrona
+     * JobLauncher é chamado pelo endpoint de forma asycrona
      * TaskExecutor executa de forma asycrona - multithread
      **/
     @Bean

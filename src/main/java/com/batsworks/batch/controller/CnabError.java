@@ -24,7 +24,7 @@ public class CnabError {
     public ResponseEntity<Object> string(@RequestParam int page,
                                          @RequestParam int size,
                                          @RequestParam Sort.Direction sort) {
-        return ResponseEntity.ok(service.string(PageRequest.of(page, size, sort, "id")));
+        return ResponseEntity.ok(service.errosPerPage(PageRequest.of(page, size, sort, "id")));
     }
 
 }

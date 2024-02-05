@@ -1,8 +1,10 @@
 package com.batsworks.batch.controller;
 
+import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.service.CnabService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -28,7 +30,7 @@ public class ArquivoController {
     }
 
     @GetMapping("download")
-    public ResponseEntity<Object> download(@RequestParam(value = "retorno", defaultValue = "true") Boolean retorno,
+    public ResponseEntity<Object> download(@RequestParam(value = "retorno", defaultValue = "false") Boolean retorno,
                                            @RequestParam(value = "arquivo") Long idArquivo) {
         var response = service.downloadCnab(retorno, idArquivo);
 
@@ -41,10 +43,11 @@ public class ArquivoController {
     }
 
     @GetMapping("/{id}")
-    public Object string(@PathVariable Long id) {
-        return service.string(id);
+    public Arquivo arquivoByID(@PathVariable Long id) {
+        return service.findArquivoByID(id);
     }
 
+    @Hidden
     @GetMapping("/reset")
     public Object object() {
         return service.resetTempFile();

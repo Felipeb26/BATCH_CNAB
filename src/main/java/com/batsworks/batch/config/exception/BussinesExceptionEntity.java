@@ -17,7 +17,7 @@ public class BussinesExceptionEntity {
     private String path;
     private String time;
     private String error;
-    private Object[] arguments;
+    private Object[] errors;
     private StatusEnum status;
 
     public void setTime(String time) {

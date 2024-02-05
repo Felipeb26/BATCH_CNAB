@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(BussinesExceptionEntity.builder()
                 .error(bussinesException.getMessage())
                 .status(isNull(bussinesException.getStatusEnum()) ? StatusEnum.UNKNOW_ERROR : bussinesException.getStatusEnum())
-                .arguments(bussinesException.getArgs())
+                .errors(bussinesException.getArgs())
                 .time(LocalDateTime.now().format(formatter))
                 .path(httpServletRequest.getServletPath())
                 .build(), bussinesException.getStatusCode());

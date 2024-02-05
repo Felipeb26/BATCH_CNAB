@@ -4,6 +4,7 @@ package com.batsworks.batch.utils;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.net.URLConnection;
@@ -25,6 +26,16 @@ public class Files {
     private String prefix;
     private static final int BUFFER = 1024;
     private static final String DIR = System.getProperty("user.dir");
+
+    public static Boolean validFile(MultipartFile file, String fileName) {
+        try {
+            var fileType = fileType(file.getInputStream(), fileName);
+            return fileType.equals("rem");
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
+    }
 
     public static String findFileRem() {
         var folder = DIR.concat("/tmp");
@@ -98,8 +109,10 @@ public class Files {
 
     public static String fileType(InputStream inputStream, String fileName) throws IOException {
         var mimetype = URLConnection.guessContentTypeFromStream(inputStream);
-        if (isNull(mimetype) || mimetype.isBlank()) mimetype =
-                fileName.substring(fileName.lastIndexOf(".") + 1);
+        if (isNull(mimetype) || mimetype.isBlank()) {
+            if (isNull(fileName) || fileName.isBlank()) return "txt";
+            return fileName.substring(fileName.lastIndexOf(".") + 1);
+        }
         return mimetype;
     }
 
