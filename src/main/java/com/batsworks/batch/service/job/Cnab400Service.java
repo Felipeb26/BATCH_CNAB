@@ -1,8 +1,11 @@
 package com.batsworks.batch.service.job;
 
 import com.batsworks.batch.cnab.read.*;
+import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
+import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -15,36 +18,40 @@ import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.batch.integration.async.AsyncItemProcessor;
 import org.springframework.batch.integration.async.AsyncItemWriter;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
-import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.LineMapper;
-import org.springframework.batch.item.file.MultiResourceItemReader;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.mapping.RecordFieldSetMapper;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.Range;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.util.concurrent.Future;
 
 @Configuration
 @RequiredArgsConstructor
 public class Cnab400Service {
 
-    private static final String DIR = System.getProperty("user.dir");
     private final PlatformTransactionManager platformTransactionManager;
     private final JobRepository repository;
+    private final CnabJobListener cnabJobListener;
+    private final CnabSkipListenner cnabSkipListenner;
+    private final SkipPolicy skipPolicy;
+    private final ArquivoRepository arquivoRepository;
+
 
     @Bean()
-    Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner, CnabJobListener cnabJobListener) {
+    Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner) {
         return new JobBuilder("CNAB_400_JOB", jobRepository)
                 .listener(cnabSkipListenner)
                 .listener(cnabJobListener)
@@ -54,11 +61,11 @@ public class Cnab400Service {
     }
 
     @Bean
-    Step step(MultiResourceItemReader<Cnab400> multiResourceItemReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor, SkipPolicy skipPolicy, CnabSkipListenner cnabSkipListenner) {
+    Step step(ItemReader<Cnab400> cnabReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
                 .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
                 .allowStartIfComplete(true)
-                .reader(multiResourceItemReader)
+                .reader(cnabReader)
                 .processor(asyncItemProcessor)
                 .writer(asyncItemWriter)
                 .faultTolerant()
@@ -70,18 +77,12 @@ public class Cnab400Service {
 
     @Bean
     @StepScope
-    public MultiResourceItemReader<Cnab400> multiResourceItemReader(FlatFileItemReader<Cnab400> cnabReader) throws IOException {
-        MultiResourceItemReader<Cnab400> reader = new MultiResourceItemReader<>();
-        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-
-        reader.setResources(resolver.getResources("file:%s/tmp/*.rem".formatted(DIR)));
-        reader.setDelegate(cnabReader);
-        return reader;
-    }
-
-    @Bean
-    CnabReader<Cnab400> cnabReader() {
+    CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['id']}") Long id) {
+        var arquivo = arquivoRepository.findById(id).orElseThrow(() -> new BussinesException(HttpStatus.INTERNAL_SERVER_ERROR, "Arquivo não encontrado"));
+        var file = Files.decompressData(arquivo.getFile());
         var cnab = new CnabReader<Cnab400>();
+        cnab.setStream(file);
+        cnab.setResource(new ByteArrayResource(file));
         cnab.setStrict(false);
         cnab.setName("CUSTOM_CNAB_READER");
         cnab.setLineMapper(lineMapper());
@@ -136,7 +137,7 @@ public class Cnab400Service {
 
     /**
      * JobLauncher é chamado pelo endpoint de forma asycrona
-     * TaskExecutor executa de forma asycrona - multithread
+     * TaskExecutor executa de forma asycrona
      **/
     @Bean
     JobLauncher jobLauncherAsync(JobRepository repository, TaskExecutor taskExecutor) throws Exception {

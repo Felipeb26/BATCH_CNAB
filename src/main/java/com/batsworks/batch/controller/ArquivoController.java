@@ -1,5 +1,6 @@
 package com.batsworks.batch.controller;
 
+import com.batsworks.batch.client.ServiceClient;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabType;
 import com.batsworks.batch.domain.records.DefaultMessage;
@@ -22,6 +23,7 @@ import static com.batsworks.batch.utils.Files.randomFileName;
 public class ArquivoController {
 
     private final CnabService service;
+    private final ServiceClient serviceClient;
 
     @PostMapping(value = "upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @CacheEvict(allEntries = true)

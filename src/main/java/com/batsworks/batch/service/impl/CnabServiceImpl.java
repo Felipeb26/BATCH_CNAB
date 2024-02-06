@@ -10,6 +10,7 @@ import com.batsworks.batch.service.CnabService;
 import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
@@ -18,11 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Paths;
-
 import static com.batsworks.batch.utils.Files.*;
 import static com.batsworks.batch.utils.Formats.actualDateString;
-import static com.batsworks.batch.utils.Formats.mask;
 import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -34,6 +32,7 @@ public class CnabServiceImpl implements CnabService {
     private final ArquivoRepository arquivoRepository;
     private final JobLauncher asyncWrite;
     private final Job jobWriteCnab;
+    private final AmqpTemplate rabbitTemplate;
     @Value("${configuration.default_folder:tmp}")
     private String tempFolderPath;
 
@@ -54,11 +53,12 @@ public class CnabServiceImpl implements CnabService {
             arquivo.setFile(data);
             arquivo = arquivoRepository.save(arquivo);
 
-            var storagePlace = Paths.get(tempFolderPath).resolve(mask(arquivo.getName(), arquivo.getId()));
-            var haveSaved = transferFile(file.getInputStream(), storagePlace);
 
-            if (Boolean.FALSE.equals(haveSaved))
-                throw new BussinesException(BAD_REQUEST, "Erro ao salvar para analise do arquivo %s ".formatted(arquivo.getName()), new Object[]{Status.PROCESSADO_ERRO});
+            rabbitTemplate.convertAndSend("arquivo.cnab", arquivo);
+//            var storagePlace = Paths.get(tempFolderPath).resolve(mask(arquivo.getName(), arquivo.getId()));
+//            var haveSaved = transferFile(file.getInputStream(), storagePlace);
+//            if (Boolean.FALSE.equals(haveSaved))
+//                throw new BussinesException(BAD_REQUEST, "Erro ao salvar para analise do arquivo %s ".formatted(arquivo.getName()), new Object[]{Status.PROCESSADO_ERRO});
             return new DefaultMessage("Analisando arquivo %s ".formatted(arquivo.getName()), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());

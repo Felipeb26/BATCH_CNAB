@@ -28,19 +28,15 @@ management:
       endpoint: ${ZIPKIN_HTTP:http}://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
 
 spring:
-  application:
-    name: CNAB BATCH
+  application.name: CNAB_BATCH
   main:
     allow-bean-definition-overriding: true
     banner-mode: OFF
   batch:
-    jdbc:
-      initialize-schema: ALWAYS
-    job:
-      enabled: false
+    jdbc.initialize-schema: ALWAYS
+    job.enabled: false
   datasource:
-    hikari:
-      connection-timeout: 5000
+    hikari.connection-timeout: 5000
     #    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
     #    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     #    username: SA
@@ -55,8 +51,7 @@ spring:
     hibernate:
       ddl-auto: none
       jdbc.batch_size: 30
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      naming.physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     open-in-view: false
     show-sql: true
     properties:
@@ -68,21 +63,15 @@ spring:
         order_updates: true
         javax.cache.provider: "org.ehcache.jsr107.EhcacheCachingProvider"
         session:
-          events:
-            log.LOG_QUERIES_SLOWER_THAN_MS: 150
+          events.log.LOG_QUERIES_SLOWER_THAN_MS: 150
           region.factory_class: jcache
-  sql:
-    init:
-      mode: ALWAYS
-  h2:
-    console:
-      enabled: true
-
-org:
-  quartz:
-    jobStore.class: org.quartz.simpl.RAMJobStore
-    scheduler.instanceName: BATCH_CNAB
-    threadPool.threadCount: 3
+  sql.init.mode: ALWAYS
+  h2.console.enabled: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
 
 configuration:
   max_size: 3000

@@ -36,7 +36,7 @@ public class CnabJobListener implements JobExecutionListener {
         if (map.isEmpty()) throw new BussinesException(BAD_REQUEST, "JobParameters is Null");
         var path = map.getString("path");
 
-        if (path == null) throw new BussinesException(BAD_REQUEST, "File Path is Null");
+//        if (path == null) throw new BussinesException(BAD_REQUEST, "File Path is Null");
         Long id = map.getLong("id");
 
         var arquivo = arquivoRepository.findById(requireNonNull(id))
@@ -51,7 +51,8 @@ public class CnabJobListener implements JobExecutionListener {
         arquivo.setValorTotal(valorTotal);
         arquivoRepository.save(arquivo);
 
-        deleteFile(path);
+//        deleteFile(path);
+
         log.info("==========================> FINISHED TO UPDATE FILE AT {}", actualDateString());
         JobExecutionListener.super.afterJob(jobExecution);
     }

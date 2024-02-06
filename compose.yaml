@@ -6,6 +6,15 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: admin
+  rabbit:
+    image: rabbitmq:3.12-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
   batch:
     depends_on:
       - mysql

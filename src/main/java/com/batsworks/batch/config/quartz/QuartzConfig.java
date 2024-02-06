@@ -1,6 +1,5 @@
 package com.batsworks.batch.config.quartz;
 
-import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import org.quartz.*;
 import org.springframework.batch.core.configuration.JobLocator;
@@ -12,9 +11,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
 import java.util.Properties;
+
+import static com.batsworks.batch.utils.Files.temp;
 
 @Configuration
 @RequiredArgsConstructor
@@ -27,7 +29,7 @@ public class QuartzConfig {
 
     @EventListener(ApplicationReadyEvent.class)
     public void doSomethingAfterStartup() {
-       Files.temp();
+       temp();
     }
 
     @Bean
@@ -86,6 +88,11 @@ public class QuartzConfig {
         properties.put("org.quartz.scheduler.instanceName", instanceName);
         properties.put("org.quartz.threadPool.threadCount", threads);
         return properties;
+    }
+
+    @Scheduled(cron = "15 * * * * *")
+    public void createTempDir(){
+        temp();
     }
 
 }

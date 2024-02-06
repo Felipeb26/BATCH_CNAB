@@ -8,18 +8,21 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.cache.annotation.Cacheable;
 
+import java.io.Serializable;
+
 
 @Getter
 @Setter
 @Builder
 @Entity
+@ToString
 @Table(name = "cnab_erro")
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicUpdate
 @Cacheable(value = {"EntityCache"})
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
-public class CnabErro extends AbstractEntity<Arquivo> {
+public class CnabErro extends AbstractEntity<Arquivo>  implements Serializable {
 
     private String message;
     private String erro;
@@ -28,6 +31,7 @@ public class CnabErro extends AbstractEntity<Arquivo> {
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idArquivo", nullable = false)
+    @ToString.Exclude
     private Arquivo arquivo;
 
 }

@@ -10,6 +10,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.cache.annotation.Cacheable;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Set;
 
@@ -17,13 +18,14 @@ import java.util.Set;
 @Setter
 @Builder
 @Entity
+@ToString
 @Table(name = "arquivo")
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicUpdate
 @Cacheable(value = {"EntityCache"})
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-public class Arquivo extends AbstractEntity<Arquivo> {
+public class Arquivo extends AbstractEntity<Arquivo> implements Serializable {
 
     private String name;
     private String extension;
@@ -40,9 +42,11 @@ public class Arquivo extends AbstractEntity<Arquivo> {
     private String observacao;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "arquivo")
     @JsonBackReference
+    @ToString.Exclude
     private Set<CnabEntity> cnab;
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "arquivo")
     @JsonBackReference
+    @ToString.Exclude
     private Set<CnabErro> cnabErros;
 
 }

@@ -3,6 +3,7 @@ package com.batsworks.batch.domain.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Date;
 
@@ -13,7 +14,7 @@ import java.sql.Date;
 @Table(name = "cnab")
 @AllArgsConstructor
 @NoArgsConstructor
-public class CnabEntity extends AbstractEntity<Arquivo> {
+public class CnabEntity extends AbstractEntity<Arquivo> implements Serializable {
 
     private String identRegistro;
     private String agenciaDebito;
