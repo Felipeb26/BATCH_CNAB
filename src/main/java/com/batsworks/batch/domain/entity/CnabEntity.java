@@ -53,6 +53,7 @@ public class CnabEntity extends AbstractEntity<Arquivo> implements Serializable 
     private String sufixoCEP;
     private String segundaMensagem;
     private String sequencialRegistro;
+    private Long linha;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idArquivo")
     private Arquivo arquivo;

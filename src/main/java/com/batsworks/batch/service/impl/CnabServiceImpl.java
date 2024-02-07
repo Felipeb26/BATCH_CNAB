@@ -43,7 +43,7 @@ public class CnabServiceImpl implements CnabService {
             var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
             arquivo = Arquivo.builder().name(fileName)
                     .extension(fileType(file.getInputStream(), fileName))
-                    .fileSize(String.valueOf(file.getSize()))
+                    .fileSize(file.getSize())
                     .file(file.getBytes())
                     .situacao(Status.PROCESSANDO).build();
 
@@ -53,12 +53,7 @@ public class CnabServiceImpl implements CnabService {
             arquivo.setFile(data);
             arquivo = arquivoRepository.save(arquivo);
 
-
             rabbitTemplate.convertAndSend("arquivo.cnab", arquivo);
-//            var storagePlace = Paths.get(tempFolderPath).resolve(mask(arquivo.getName(), arquivo.getId()));
-//            var haveSaved = transferFile(file.getInputStream(), storagePlace);
-//            if (Boolean.FALSE.equals(haveSaved))
-//                throw new BussinesException(BAD_REQUEST, "Erro ao salvar para analise do arquivo %s ".formatted(arquivo.getName()), new Object[]{Status.PROCESSADO_ERRO});
             return new DefaultMessage("Analisando arquivo %s ".formatted(arquivo.getName()), Status.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());

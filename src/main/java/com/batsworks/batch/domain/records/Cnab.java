@@ -49,6 +49,7 @@ public record Cnab(
         String sufixoCEP,
         String segundaMensagem,
         String sequencialRegistro,
+        Integer linha,
         Arquivo arquivo,
         LocalDateTime dataCadastro) {
 
@@ -63,7 +64,7 @@ public record Cnab(
                 identificacaoOcorrencia, numeroDocumento, dataVenciment, valorTitulo, especieTitulo, dataEmissa,
                 primeiraInstrucao, segundaInstrucao, moraDia, dataLimiteDescontoConcessa, valorDesconto, valorIOF,
                 valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem,
-                sequencialRegistro, arquivo, dataCadastro);
+                sequencialRegistro, linha, arquivo, dataCadastro);
     }
 
 }

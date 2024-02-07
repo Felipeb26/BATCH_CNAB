@@ -22,8 +22,8 @@ public class CnabSkipListenner implements SkipListener<Cnab400, Cnab> {
 
     @Override
     public void onSkipInWrite(Cnab item, Throwable t) {
-        SkipListener.super.onSkipInWrite(item, t);
         log.warn("WRITE ERRO: {}", t.getMessage());
+        SkipListener.super.onSkipInWrite(item, t);
     }
 
 }

@@ -44,7 +44,7 @@ spring:
     url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: admin
+    password: root
   jpa:
     database-platform: org.hibernate.dialect.MySQLDialect
     #    database-platform: org.hibernate.dialect.SQLServerDialect
@@ -69,7 +69,7 @@ spring:
   h2.console.enabled: true
   rabbitmq:
     host: localhost
-    port: 5672
+    port: 5674
     username: guest
     password: guest
 

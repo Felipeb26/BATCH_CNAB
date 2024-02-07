@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
     private ResponseEntity<Object> cnabLineException(CnabException cnabException) {
         Map<String, Object> map = new HashMap<>();
         map.put("message", cnabException.getMessage());
-        map.put("line", cnabException.getActualLine());
+        map.put("linha", cnabException.getActualLine());
         return ResponseEntity.badRequest().body(map);
     }
 

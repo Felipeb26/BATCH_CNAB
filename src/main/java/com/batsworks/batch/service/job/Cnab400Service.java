@@ -4,9 +4,10 @@ import com.batsworks.batch.cnab.read.*;
 import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
-import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.service.CnabService;
 import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.StepScope;
@@ -32,12 +33,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.http.HttpStatus;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 import java.util.concurrent.Future;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class Cnab400Service {
@@ -47,11 +48,11 @@ public class Cnab400Service {
     private final CnabJobListener cnabJobListener;
     private final CnabSkipListenner cnabSkipListenner;
     private final SkipPolicy skipPolicy;
-    private final ArquivoRepository arquivoRepository;
+    private final CnabService cnabService;
 
 
     @Bean()
-    Job jobCnab(Step step, JobRepository jobRepository, CnabSkipListenner cnabSkipListenner) {
+    Job jobCnab(Step step, JobRepository jobRepository) {
         return new JobBuilder("CNAB_400_JOB", jobRepository)
                 .listener(cnabSkipListenner)
                 .listener(cnabJobListener)
@@ -78,8 +79,12 @@ public class Cnab400Service {
     @Bean
     @StepScope
     CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['id']}") Long id) {
-        var arquivo = arquivoRepository.findById(id).orElseThrow(() -> new BussinesException(HttpStatus.INTERNAL_SERVER_ERROR, "Arquivo não encontrado"));
+        var arquivo = cnabService.findArquivoByID(id);
         var file = Files.decompressData(arquivo.getFile());
+        if (arquivo.getFileSize() != file.length) {
+            log.error("Tamanho {} original e {} decompactado diferentes", arquivo.getFileSize(), file.length);
+        }
+
         var cnab = new CnabReader<Cnab400>();
         cnab.setStream(file);
         cnab.setResource(new ByteArrayResource(file));
@@ -97,11 +102,11 @@ public class Cnab400Service {
                         " codigoBanco, campoMulta, percentualMulta, nossoNumero, digitoConferenciaNumeroBanco,descontoDia, condicaoEmpissaoPapeladaCobranca," +
                         " boletoDebitoAutomatico,identificacaoOcorrencia, numeroDocumento,dataVencimento, valorTitulo, especieTitulo, dataEmissao, primeiraInstrucao," +
                         " segundaInstrucao, moraDia,dataLimiteDescontoConcessao, valorDesconto, valorIOF, valorAbatimento, tipoPagador, nomePagador, endereco,primeiraMensagem," +
-                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro,idArquivo,dataCadastro) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
+                        " cep, sufixoCEP, segundaMensagem, sequencialRegistro, linha, idArquivo, dataCadastro) VALUES (:identRegistro,:agenciaDebito,:digitoAgencia,:razaoAgencia,:contaCorrente," +
                         ":digitoConta,:identBeneficiario,:controleParticipante,:codigoBanco,:campoMulta,:percentualMulta,:nossoNumero,:digitoConferenciaNumeroBanco," +
                         ":descontoDia,:condicaoEmpissaoPapeladaCobranca,:boletoDebitoAutomatico,:identificacaoOcorrencia,:numeroDocumento,:dataVencimento,:valorTitulo," +
                         ":especieTitulo,:dataEmissao,:primeiraInstrucao,:segundaInstrucao,:moraDia,:dataLimiteDescontoConcessao,:valorDesconto,:valorIOF,:valorAbatimento," +
-                        ":tipoPagador,:nomePagador,:endereco,:primeiraMensagem,:cep,:sufixoCEP,:segundaMensagem,:sequencialRegistro,:arquivo.id,:dataCadastro)")
+                        ":tipoPagador,:nomePagador,:endereco,:primeiraMensagem,:cep,:sufixoCEP,:segundaMensagem,:sequencialRegistro, :linha, :arquivo.id,:dataCadastro)")
                 .beanMapped().build();
     }
 
@@ -118,7 +123,7 @@ public class Cnab400Service {
                 "descontoDia", "condicaoEmpissaoPapeladaCobranca", "boletoDebitoAutomatico", "identificacaoOcorrencia",
                 "numeroDocumento", "dataVencimento", "valorTitulo", "especieTitulo", "dataEmissao", "primeiraInstrucao",
                 "segundaInstrucao", "moraDia", "dataLimiteDescontoConcessao", "valorDesconto", "valorIOF", "valorAbatimento",
-                "tipoPagador", "nomePagador", "endereco", "primeiraMensagem", "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro", "line");
+                "tipoPagador", "nomePagador", "endereco", "primeiraMensagem", "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro", "linha");
 
         lineTokenizer.setColumns(new Range(1, 1), new Range(2, 6), new Range(7, 7), new Range(8, 12), new Range(13, 19),
                 new Range(20, 20), new Range(21, 37), new Range(38, 52), new Range(63, 65), new Range(66, 66),

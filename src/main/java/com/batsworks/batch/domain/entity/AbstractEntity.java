@@ -26,9 +26,18 @@ public abstract class AbstractEntity<T> implements Serializable {
     @Getter(AccessLevel.PUBLIC)
     @Setter(AccessLevel.PUBLIC)
     private LocalDateTime dataCadastro;
+    @CreatedDate
+    @Getter(AccessLevel.PUBLIC)
+    @Setter(AccessLevel.PUBLIC)
+    private LocalDateTime dataAtualizacao;
 
     @PrePersist
     private void persistDate() {
-        dataCadastro = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
+        this.dataCadastro = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
+    }
+
+    @PreUpdate
+    private void persistUpdate(){
+        this.dataAtualizacao = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
     }
 }

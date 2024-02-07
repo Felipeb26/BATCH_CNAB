@@ -1,7 +1,10 @@
 package com.batsworks.batch.config.amqp;
 
 import com.batsworks.batch.domain.entity.Arquivo;
+import com.batsworks.batch.domain.enums.Status;
+import com.batsworks.batch.service.CnabService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
@@ -15,19 +18,27 @@ import org.springframework.stereotype.Component;
 
 import static com.batsworks.batch.utils.Formats.actualDateString;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CnabFilaRead {
 
+    private final CnabService cnabService;
     private final JobLauncher jobLauncher;
     private final Job jobCnab;
 
     @RabbitListener(queues = "arquivo.cnab")
-    public void receveFile(Arquivo arquivo) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
+    public void receveFile(Arquivo arquivoFila) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
+
+        var arquivo = cnabService.findArquivoByID(arquivoFila.getId());
+        if (arquivo.getSituacao().equals(Status.PROCESSADO_SUCESSO)) {
+            log.info("Arquivo {} já processado nova tentativa realizada as {}", arquivo.getName(), actualDateString());
+            return;
+        }
 
         JobParameters parameters = new JobParametersBuilder()
                 .addString("time", actualDateString())
-                .addJobParameter("path", "", String.class, false)
+                .addJobParameter("path", arquivo.getName(), String.class, false)
                 .addJobParameter("id", arquivo.getId(), Long.class, true)
                 .toJobParameters();
         jobLauncher.run(jobCnab, parameters);

@@ -30,7 +30,7 @@ public class Arquivo extends AbstractEntity<Arquivo> implements Serializable {
     private String name;
     private String extension;
     @Column(name = "fileSize")
-    private String fileSize;
+    private Long fileSize;
     private Long quantidade;
     @Enumerated(EnumType.STRING)
     private Status situacao;

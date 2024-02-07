@@ -30,7 +30,7 @@ public class Files {
     public static Boolean validFile(MultipartFile file, String fileName) {
         try {
             var fileType = fileType(file.getInputStream(), fileName);
-            return fileType.equals("rem");
+            return fileType.equalsIgnoreCase("rem");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return false;
