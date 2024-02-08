@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
@@ -16,6 +17,9 @@ import java.time.LocalDateTime;
 @Setter
 @MappedSuperclass
 public abstract class AbstractEntity<T> implements Serializable {
+
+    @Serial
+    private static final long serialVersionUID = 1234567L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

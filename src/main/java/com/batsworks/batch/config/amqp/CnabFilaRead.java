@@ -32,13 +32,13 @@ public class CnabFilaRead {
 
         var arquivo = cnabService.findArquivoByID(arquivoFila.getId());
         if (arquivo.getSituacao().equals(Status.PROCESSADO_SUCESSO)) {
-            log.info("Arquivo {} já processado nova tentativa realizada as {}", arquivo.getName(), actualDateString());
+            log.info("Arquivo {} já processado nova tentativa realizada as {}", arquivo.getNome(), actualDateString());
             return;
         }
 
         JobParameters parameters = new JobParametersBuilder()
                 .addString("time", actualDateString())
-                .addJobParameter("path", arquivo.getName(), String.class, false)
+                .addJobParameter("path", arquivo.getNome(), String.class, false)
                 .addJobParameter("id", arquivo.getId(), Long.class, true)
                 .toJobParameters();
         jobLauncher.run(jobCnab, parameters);

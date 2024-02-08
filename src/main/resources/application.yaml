@@ -69,7 +69,7 @@ spring:
   h2.console.enabled: true
   rabbitmq:
     host: localhost
-    port: 5674
+    port: 5672
     username: guest
     password: guest
 

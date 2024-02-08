@@ -27,7 +27,7 @@ import java.util.Set;
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
 public class Arquivo extends AbstractEntity<Arquivo> implements Serializable {
 
-    private String name;
+    private String nome;
     private String extension;
     @Column(name = "fileSize")
     private Long fileSize;

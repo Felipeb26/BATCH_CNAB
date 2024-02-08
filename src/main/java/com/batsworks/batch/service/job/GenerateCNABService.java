@@ -45,14 +45,12 @@ public class GenerateCNABService {
     @StepScope
     public RepositoryItemReader<CnabEntity> repositoryItemReader(@Value("#{jobParameters[id]}") Long id) {
         Map<String, Sort.Direction> map = new HashMap<>();
-        map.put("id", Sort.Direction.ASC);
+        map.put("linha", Sort.Direction.ASC);
 
-        List<Object> arguments = new ArrayList<>();
-        arguments.add(id);
         return new RepositoryItemReaderBuilder<CnabEntity>()
-                .name("READER_CNAB" + actualDateString())
+                .name("READER_CNAB " + actualDateString())
                 .repository(cnabRepository)
-                .arguments(arguments)
+                .arguments(List.of(id))
                 .methodName("findAllById")
                 .sorts(map)
                 .build();
@@ -102,8 +100,8 @@ public class GenerateCNABService {
     @Bean
     Job jobWriteCnab(Step stepWrite, JobRepository repository) {
         return new JobBuilder("WRITE_CNAB_400_JOB_".concat(actualDateString()), repository)
-                .start(stepWrite)
-                .incrementer(new RunIdIncrementer())
+                .flow(stepWrite).end()
+//                .incrementer(new RunIdIncrementer())
                 .build();
     }
 
