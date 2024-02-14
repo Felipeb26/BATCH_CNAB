@@ -32,7 +32,8 @@ public class CnabFilaRead {
 
         var arquivo = cnabService.findArquivoByID(arquivoFila.getId());
         if (arquivo.getSituacao().equals(Status.PROCESSADO_SUCESSO)) {
-            log.info("Arquivo {} já processado nova tentativa realizada as {}", arquivo.getNome(), actualDateString());
+            log.info("Arquivo {} já processado com sucesso nova tentativa realizada as {}", arquivo.getNome(), actualDateString());
+            log.info("Apenas arquivo que não foram processado com sucesso podem ser reprocessados novamente");
             return;
         }
 

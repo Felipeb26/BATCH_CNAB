@@ -10,7 +10,6 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static com.batsworks.batch.utils.Files.deleteFile;
 import static com.batsworks.batch.utils.Formats.actualDateString;
 import static java.util.Objects.nonNull;
 import static java.util.Objects.requireNonNull;
@@ -36,7 +35,7 @@ public class CnabJobListener implements JobExecutionListener {
         if (map.isEmpty()) throw new BussinesException(BAD_REQUEST, "JobParameters is Null");
         var path = map.getString("path");
 
-//        if (path == null) throw new BussinesException(BAD_REQUEST, "File Path is Null");
+        if (path == null) throw new BussinesException(BAD_REQUEST, "File Name is Null");
         Long id = map.getLong("id");
 
         var arquivo = arquivoRepository.findById(requireNonNull(id))
@@ -50,8 +49,6 @@ public class CnabJobListener implements JobExecutionListener {
         arquivo.setQuantidade(erros + boletos);
         arquivo.setValorTotal(valorTotal);
         arquivoRepository.save(arquivo);
-
-//        deleteFile(path);
 
         log.info("==========================> FINISHED TO UPDATE FILE AT {}", actualDateString());
         JobExecutionListener.super.afterJob(jobExecution);

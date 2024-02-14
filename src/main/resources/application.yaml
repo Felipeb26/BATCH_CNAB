@@ -28,6 +28,10 @@ management:
       endpoint: ${ZIPKIN_HTTP:http}://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
 
 spring:
+  servlet:
+    multipart:
+      max-file-size:
+        15MB
   application.name: CNAB_BATCH
   main:
     allow-bean-definition-overriding: true
@@ -37,17 +41,17 @@ spring:
     job.enabled: false
   datasource:
     hikari.connection-timeout: 5000
-    #    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
-    #    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    #    username: SA
-    #    password: Felipe@2001
-    url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
-    password: root
+    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+    driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
+    #username: SA
+    #password: Felipe@2001
+    #url: jdbc:mysql://localhost:3306/CNAB_CODES?sessionVariables=sql_mode='NO_ENGINE_SUBSTITUTION'&jdbcCompliantTruncation=false
+    #driver-class-name: com.mysql.cj.jdbc.Driver
+    username: sa
+    password: root@123
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
-    #    database-platform: org.hibernate.dialect.SQLServerDialect
+    #database-platform: org.hibernate.dialect.MySQLDialect
+    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
       ddl-auto: none
       jdbc.batch_size: 30
@@ -65,7 +69,11 @@ spring:
         session:
           events.log.LOG_QUERIES_SLOWER_THAN_MS: 150
           region.factory_class: jcache
-  sql.init.mode: ALWAYS
+  sql:
+    init:
+      schema-locations:
+        - classpath:schema_sqlserver.sql
+      mode: NEVER
   h2.console.enabled: true
   rabbitmq:
     host: localhost

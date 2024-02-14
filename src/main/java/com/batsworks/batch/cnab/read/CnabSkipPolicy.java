@@ -50,7 +50,7 @@ public class CnabSkipPolicy implements SkipPolicy {
                     .erro(cnab.getMessage())
                     .message(cnab.getMessage().concat(" - was received: ").concat(String.valueOf(cnab.getSize())))
                     .lineNumber(cnab.getActualLine())
-                    .line(cnab.getLine())
+                    .linhha(cnab.getLine())
                     .build());
             return true;
         } else {

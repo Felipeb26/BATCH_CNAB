@@ -1,6 +1,9 @@
 package com.batsworks.batch.service.job;
 
+import com.batsworks.batch.cnab.write.CnabWriteProcessor;
 import com.batsworks.batch.domain.entity.CnabEntity;
+import com.batsworks.batch.domain.records.Cnab;
+import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.repository.CnabRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -12,6 +15,7 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.file.FlatFileItemWriter;
@@ -42,6 +46,33 @@ public class GenerateCNABService {
     private final JobRepository jobRepository;
 
     @Bean
+    Job jobWriteCnab(Step stepWrite, JobRepository repository) {
+        return new JobBuilder("WRITE_CNAB_400_JOB_".concat(actualDateString()), repository)
+                .flow(stepWrite).end()
+                .incrementer(new RunIdIncrementer())
+                .build();
+    }
+
+    @Bean
+    public Step stepWrite(RepositoryItemReader<CnabEntity> repositoryItemReader, FlatFileItemWriter<CnabEntity> fileItemWriter) {
+        return new StepBuilder("CNAB_TO_FILE", jobRepository)
+                .<CnabEntity, CnabEntity>chunk(350, transactionManager)
+                .reader(repositoryItemReader)
+//                .processor(cnabWriteProcessor())
+                .writer(fileItemWriter)
+                .build();
+    }
+
+    @Bean
+    JobLauncher asyncWrite(JobRepository jobRepository, TaskExecutor taskExecutor) throws Exception {
+        var jobLauncher = new TaskExecutorJobLauncher();
+        jobLauncher.setJobRepository(jobRepository);
+        jobLauncher.setTaskExecutor(taskExecutor);
+        jobLauncher.afterPropertiesSet();
+        return jobLauncher;
+    }
+
+    @Bean
     @StepScope
     public RepositoryItemReader<CnabEntity> repositoryItemReader(@Value("#{jobParameters[id]}") Long id) {
         Map<String, Sort.Direction> map = new HashMap<>();
@@ -57,6 +88,11 @@ public class GenerateCNABService {
     }
 
     @Bean
+    public CnabWriteProcessor cnabWriteProcessor(){
+     return new CnabWriteProcessor();
+    }
+
+    @Bean
     public FlatFileItemWriter<CnabEntity> fileItemWriter() {
         FlatFileItemWriter<CnabEntity> writer = new FlatFileItemWriter<>();
         writer.setName("WRITE_CNAB");
@@ -66,7 +102,7 @@ public class GenerateCNABService {
         writer.setResource(new FileSystemResource(file));
 
         DelimitedLineAggregator<CnabEntity> lineAggregator = new DelimitedLineAggregator<>();
-        lineAggregator.setDelimiter(" ");
+        lineAggregator.setDelimiter("");
 
         BeanWrapperFieldExtractor<CnabEntity> fieldExtractor = new BeanWrapperFieldExtractor<>();
         fieldExtractor.setNames(new String[]{"identRegistro", "agenciaDebito", "digitoAgencia",
@@ -82,36 +118,13 @@ public class GenerateCNABService {
                 "nomePagador", "endereco", "primeiraMensagem",
                 "cep", "sufixoCEP", "segundaMensagem", "sequencialRegistro"});
 
+
         lineAggregator.setFieldExtractor(fieldExtractor);
         writer.setLineAggregator(lineAggregator);
 
         return writer;
     }
 
-    @Bean
-    public Step stepWrite(RepositoryItemReader<CnabEntity> repositoryItemReader, FlatFileItemWriter<CnabEntity> fileItemWriter) {
-        return new StepBuilder("CNAB_TO_FILE", jobRepository)
-                .<CnabEntity, CnabEntity>chunk(100, transactionManager)
-                .reader(repositoryItemReader)
-                .writer(fileItemWriter)
-                .build();
-    }
 
-    @Bean
-    Job jobWriteCnab(Step stepWrite, JobRepository repository) {
-        return new JobBuilder("WRITE_CNAB_400_JOB_".concat(actualDateString()), repository)
-                .flow(stepWrite).end()
-//                .incrementer(new RunIdIncrementer())
-                .build();
-    }
-
-    @Bean
-    JobLauncher asyncWrite(JobRepository jobRepository, TaskExecutor taskExecutor) throws Exception {
-        var jobLauncher = new TaskExecutorJobLauncher();
-        jobLauncher.setJobRepository(jobRepository);
-        jobLauncher.setTaskExecutor(taskExecutor);
-        jobLauncher.afterPropertiesSet();
-        return jobLauncher;
-    }
 
 }

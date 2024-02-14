@@ -15,6 +15,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -88,6 +89,7 @@ public class CnabServiceImpl implements CnabService {
     }
 
     @Override
+    @Cacheable("Arquivo")
     public Arquivo findArquivoByID(Long id) {
         return arquivoRepository.findById(id).orElseThrow(() -> new BussinesException(BAD_REQUEST, "File not Found with id %s".formatted(id)));
     }

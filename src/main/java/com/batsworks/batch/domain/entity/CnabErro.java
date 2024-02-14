@@ -27,7 +27,7 @@ public class CnabErro extends AbstractEntity<Arquivo>  implements Serializable {
     private String message;
     private String erro;
     private Long lineNumber;
-    private String line;
+    private String linhha;
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idArquivo", nullable = false)

@@ -5,17 +5,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 public interface CnabRepository extends JpaRepository<CnabEntity, Long>, PagingAndSortingRepository<CnabEntity, Long> {
 
-    @Query("FROM Cnab ce WHERE ce.arquivo.id=?1")
-    Optional<List<CnabEntity>> findAllByIdArquivo(Long idArquivo);
+    @Query("SELECT ce.linha FROM Cnab ce WHERE ce.arquivo.id=?1 order by linha desc limit 1")
+    Long findLastByIdArquivo(Long idArquivo);
 
     @Query("SELECT COUNT(ce.id) FROM Cnab ce WHERE ce.arquivo.id=?1")
     Long countCnabsByIdArquivo(Long idArquivo);

@@ -10,6 +10,6 @@ import java.time.ZoneId;
 public enum Zones {
 
     AMERIACA_SAO_PAULO(ZoneId.of("America/Sao_Paulo"));
-    private ZoneId zone;
+    private final ZoneId zone;
 
 }

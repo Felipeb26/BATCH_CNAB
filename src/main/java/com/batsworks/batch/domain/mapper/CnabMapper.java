@@ -1,6 +1,6 @@
 package com.batsworks.batch.domain.mapper;
 
-import com.batsworks.batch.domain.records.CnabErroDTO;
+import com.batsworks.batch.config.exception.CnabErroDTO;
 import com.batsworks.batch.domain.entity.CnabErro;
 import lombok.experimental.UtilityClass;
 
@@ -14,7 +14,7 @@ public class CnabMapper {
     }
 
     public static CnabErroDTO cnabErroToDTO(CnabErro cnabErro) {
-        return new CnabErroDTO(cnabErro.getLineNumber(), cnabErro.getLine(), cnabErro.getErro(), cnabErro.getMessage(), cnabErro.getDataCadastro());
+        return new CnabErroDTO(cnabErro.getLineNumber(), cnabErro.getLinhha(), cnabErro.getErro(), cnabErro.getMessage(), cnabErro.getDataCadastro());
     }
 
 }

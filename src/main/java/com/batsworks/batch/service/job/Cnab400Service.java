@@ -64,7 +64,7 @@ public class Cnab400Service {
     @Bean
     Step step(ItemReader<Cnab400> cnabReader, AsyncItemProcessor<Cnab400, Cnab> asyncItemProcessor, AsyncItemWriter<Cnab> asyncItemWriter, CnabProcessor processor) {
         return new StepBuilder("CNAB_400_MINOR_STEP", repository)
-                .<Cnab400, Future<Cnab>>chunk(500, platformTransactionManager)
+                .<Cnab400, Future<Cnab>>chunk(350, platformTransactionManager)
                 .allowStartIfComplete(true)
                 .reader(cnabReader)
                 .processor(asyncItemProcessor)

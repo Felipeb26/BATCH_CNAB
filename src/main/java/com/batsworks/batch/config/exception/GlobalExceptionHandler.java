@@ -16,6 +16,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.batsworks.batch.config.exception.StatusEnum.ERROR_WITH_MESSAGE;
+import static com.batsworks.batch.config.exception.StatusEnum.UNKNOW_ERROR;
 import static com.batsworks.batch.utils.Files.deleteFile;
 import static java.util.Objects.isNull;
 
@@ -48,9 +50,10 @@ public class GlobalExceptionHandler {
     private ResponseEntity<Object> response(BussinesException bussinesException, HttpServletRequest httpServletRequest) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:ss");
         deleteFile(System.getProperty("user.dir").concat("/tmp"));
+        var statusEnum = isNull(bussinesException.getStatusEnum()) ? UNKNOW_ERROR : bussinesException.getStatusEnum();
         return new ResponseEntity<>(BussinesExceptionEntity.builder()
                 .error(bussinesException.getMessage())
-                .status(isNull(bussinesException.getStatusEnum()) ? StatusEnum.UNKNOW_ERROR : bussinesException.getStatusEnum())
+                .status(statusEnum.equals(UNKNOW_ERROR) && isNull(bussinesException.getMessage()) ? ERROR_WITH_MESSAGE : statusEnum)
                 .errors(bussinesException.getArgs())
                 .time(LocalDateTime.now().format(formatter))
                 .path(httpServletRequest.getServletPath())

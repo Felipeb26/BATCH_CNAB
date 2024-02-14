@@ -1,23 +1,16 @@
--- Create the database if it doesn't exist
-IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'CNAB_CODES')
-BEGIN
-    CREATE DATABASE CNAB_CODES;
-END
-
--- Use the CNAB_CODES database
-USE CNAB_CODES;
-
 -- Create the 'arquivo' table
 IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'arquivo')
 BEGIN
     CREATE TABLE arquivo (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        name VARCHAR(255),
+        nome VARCHAR(255),
         extension VARCHAR(255),
         fileSize VARCHAR(255),
         quantidade INT,
         situacao VARCHAR(255),
-        arquivo VARBINARY(MAX)
+        arquivo VARBINARY(MAX),
+        dataCadastro DATETIME,
+        dataAtualizacao DATETIME
     );
 END
 
@@ -27,27 +20,13 @@ BEGIN
     CREATE TABLE cnab_erro (
         id INT IDENTITY(1,1) PRIMARY KEY,
         message VARCHAR(255),
-        line VARCHAR(255),
+        linha VARCHAR(255),
         lineNumber INT,
         erro VARCHAR(255),
         idArquivo INT,
+        dataCadastro DATETIME,
+        dataAtualizacao DATETIME,
         FOREIGN KEY (idArquivo) REFERENCES arquivo(id)
-    );
-END
-
--- Create the 'transacao' table
-IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'transacao')
-BEGIN
-    CREATE TABLE transacao (
-        id INT IDENTITY(1,1) PRIMARY KEY,
-        tipo INT,
-        data DATE,
-        valor DECIMAL,
-        cpf BIGINT,
-        cartao VARCHAR(255),
-        hora TIME,
-        donoLoja VARCHAR(255),
-        nomeLoja VARCHAR(255)
     );
 END
 
@@ -94,6 +73,9 @@ BEGIN
         segundaMensagem VARCHAR(255),
         sequencialRegistro VARCHAR(255),
         idArquivo INT,
+        linha INT,
+        dataCadastro DATETIME,
+        dataAtualizacao DATETIME,
         FOREIGN KEY (idArquivo) REFERENCES arquivo(id)
     );
 END
