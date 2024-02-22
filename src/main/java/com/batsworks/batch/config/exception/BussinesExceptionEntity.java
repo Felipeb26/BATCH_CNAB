@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.batsworks.batch.utils.Formats.customDateTimeString;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -15,10 +17,12 @@ import java.time.format.DateTimeFormatter;
 public class BussinesExceptionEntity {
 
     private String path;
-    private String time;
+    @Builder.Default
+    private String time = customDateTimeString("yyyy-MM-dd HH:ss");
     private String error;
     private Object[] errors;
-    private StatusEnum status;
+    @Builder.Default
+    private StatusEnum status = StatusEnum.UNKNOW_ERROR;
 
     public void setTime(String time) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");

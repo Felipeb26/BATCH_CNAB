@@ -1,6 +1,6 @@
 package com.batsworks.batch.cnab.read;
 
-import com.batsworks.batch.config.exception.CnabException;
+import com.batsworks.batch.config.exception.CnabProcessingException;
 import com.batsworks.batch.domain.records.Cnab400;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 
@@ -11,14 +11,14 @@ public class CnabLineMapper<T> extends DefaultLineMapper<T> {
     public T mapLine(String line, int lineNumber) throws Exception {
         try {
             if (isHeader(line) || Boolean.FALSE.equals(line.length() == 400)) {
-                throw new CnabException("Titulo %s com %s caracteres".formatted(line.substring(70, 81), line.length()), lineNumber, line);
+                throw new CnabProcessingException("Titulo %s com %s caracteres".formatted(line.substring(70, 81), line.length()), lineNumber, line);
             }
             var mappedLine = super.mapLine(line, lineNumber);
             if (mappedLine instanceof Cnab400 cnab)
                 return (T) cnabSaveLine(cnab, lineNumber);
             return mappedLine;
         } catch (Exception e) {
-            throw new CnabException(e.getMessage(), lineNumber, line);
+            throw new CnabProcessingException(e.getMessage(), lineNumber, line);
         }
     }
 

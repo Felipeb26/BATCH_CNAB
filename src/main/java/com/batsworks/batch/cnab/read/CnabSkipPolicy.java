@@ -1,7 +1,7 @@
 package com.batsworks.batch.cnab.read;
 
 
-import com.batsworks.batch.config.exception.CnabException;
+import com.batsworks.batch.config.exception.CnabProcessingException;
 import com.batsworks.batch.domain.entity.BatchParameters;
 import com.batsworks.batch.domain.entity.CnabErro;
 import com.batsworks.batch.repository.ArquivoRepository;
@@ -13,6 +13,7 @@ import org.springframework.batch.item.file.FlatFileParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 /**
  * A linha que mostra no log assim como a salva nem sempre é a verdadeira já
@@ -44,17 +45,30 @@ public class CnabSkipPolicy implements SkipPolicy {
         }
 
         var arquivo = arquivoRepository.findById(id).orElse(null);
-        if (t.getCause() instanceof CnabException cnab) {
+
+        if (t instanceof CnabProcessingException cnab) {
             cnabErroRepository.save(CnabErro.builder()
                     .arquivo(arquivo)
                     .erro(cnab.getMessage())
                     .message(cnab.getMessage().concat(" - was received: ").concat(String.valueOf(cnab.getSize())))
                     .lineNumber(cnab.getActualLine())
-                    .linhha(cnab.getLine())
+                    .linha(cnab.getLine())
+                    .build());
+            return true;
+        }
+
+        if (t.getCause() instanceof CnabProcessingException cnab) {
+            cnabErroRepository.save(CnabErro.builder()
+                    .arquivo(arquivo)
+                    .erro(cnab.getMessage())
+                    .message(cnab.getMessage().concat(" - was received: ").concat(String.valueOf(cnab.getSize())))
+                    .lineNumber(cnab.getActualLine())
+                    .linha(cnab.getLine())
                     .build());
             return true;
         } else {
             log.error("AN UNCOMMON ERROR HAS HAPPEN: {}", t.getMessage());
+            log.error(t.getMessage(), t);
         }
         return true;
     }

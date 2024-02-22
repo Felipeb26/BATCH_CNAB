@@ -2,13 +2,14 @@ package com.batsworks.batch.cnab.read;
 
 import com.batsworks.batch.client.ServiceClient;
 import com.batsworks.batch.config.exception.BussinesException;
-import com.batsworks.batch.config.exception.CnabException;
+import com.batsworks.batch.config.exception.CnabProcessingException;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.Zones;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.repository.CnabRepository;
+import com.batsworks.batch.service.CnabService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.StepExecution;
@@ -21,7 +22,6 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import static com.batsworks.batch.utils.Files.resolveFileName;
 import static java.lang.Long.parseLong;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -35,6 +35,8 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
     private CnabRepository cnabRepository;
     @Autowired
     private ServiceClient serviceClient;
+    @Autowired
+    private CnabService cnabService;
     private JobParameters map;
     private Optional<Arquivo> arquivo = Optional.empty();
     private Long lastLine;
@@ -43,10 +45,9 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
     public void beforeStep(StepExecution stepExecution) {
         map = stepExecution.getJobParameters();
         var path = map.getString("path");
-        path = resolveFileName(path, true);
         Long id = map.getLong("id");
         log.info("==========================> START PROCESSING FILE {} AT {}", path, map.getString("time"));
-        if(id == null){
+        if (id == null) {
             throw new BussinesException(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi Localizado arquivo");
         }
         arquivo = arquivoRepository.findById(id);
@@ -54,47 +55,65 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
     }
 
     @Override
-    public Cnab process(Cnab400 cnab) throws Exception {
-        if (isNull(cnab.controleParticipante()) || cnab.controleParticipante().isBlank()) return null;
+    public Cnab process(Cnab400 cnab400) throws Exception {
+        if (isNull(cnab400.controleParticipante()) || cnab400.controleParticipante().isBlank()) return null;
 
 
-        if (nonNull(lastLine) && lastLine >= parseLong(cnab.linha())) {
+        if (nonNull(lastLine) && lastLine >= parseLong(cnab400.linha())) {
             return null;
         }
 
-        decisaoPorOcorrencia(cnab.identificacaoOcorrencia());
+        var dataCadastro = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
+        var cnab = new Cnab(null, cnab400.identRegistro(), cnab400.agenciaDebito(), cnab400.digitoAgencia(), cnab400.razaoAgencia(), cnab400.contaCorrente(), cnab400.digitoConta(), cnab400.identBeneficiario(),
+                cnab400.controleParticipante(), cnab400.codigoBanco(), cnab400.campoMulta(), cnab400.percentualMulta(), cnab400.nossoNumero(), cnab400.digitoConferenciaNumeroBanco(),
+                cnab400.descontoDia(), cnab400.condicaoEmpissaoPapeladaCobranca(), cnab400.boletoDebitoAutomatico(), cnab400.identificacaoOcorrencia(), cnab400.numeroDocumento(),
+                null, cnab400.valorTitulo(), cnab400.especieTitulo(), null, cnab400.primeiraInstrucao(), cnab400.segundaInstrucao(), cnab400.moraDia(),
+                null, cnab400.valorDesconto(), cnab400.valorIOF(), cnab400.valorAbatimento(), cnab400.tipoPagador(), cnab400.nomePagador(), cnab400.endereco(),
+                cnab400.primeiraMensagem(), cnab400.cep(), cnab400.sufixoCEP(), cnab400.segundaMensagem(), cnab400.sequencialRegistro(), Integer.parseInt(cnab400.linha()), arquivo.orElse(null), dataCadastro
+        ).withDates(cnab400.dataVencimento(), cnab400.dataEmissao(), cnab400.dataLimiteDescontoConcessao());
 
-        final ResponseEntity<Object> response;
+
         try {
-            response = serviceClient.findWallById();
-            log.info("STATUS CODE {}", response.getStatusCode());
-        } catch (BussinesException bussines) {
-            throw new CnabException(bussines.getMessage(), Integer.parseInt(cnab.linha()));
+            decisaoPorOcorrencia(cnab400.identificacaoOcorrencia(), cnab);
         } catch (Exception e) {
             log.info(e.getMessage());
+            throw new CnabProcessingException(e.getMessage(), cnab.linha());
         }
 
-        log.info("==========================> FINISHING PROCESSING LINE {} AT {}", cnab.linha(), map.getString("time"));
-        var dataCadastro = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
-        return new Cnab(null, cnab.identRegistro(), cnab.agenciaDebito(), cnab.digitoAgencia(), cnab.razaoAgencia(), cnab.contaCorrente(), cnab.digitoConta(), cnab.identBeneficiario(),
-                cnab.controleParticipante(), cnab.codigoBanco(), cnab.campoMulta(), cnab.percentualMulta(), cnab.nossoNumero(), cnab.digitoConferenciaNumeroBanco(),
-                cnab.descontoDia(), cnab.condicaoEmpissaoPapeladaCobranca(), cnab.boletoDebitoAutomatico(), cnab.identificacaoOcorrencia(), cnab.numeroDocumento(),
-                null, cnab.valorTitulo(), cnab.especieTitulo(), null, cnab.primeiraInstrucao(), cnab.segundaInstrucao(), cnab.moraDia(),
-                null, cnab.valorDesconto(), cnab.valorIOF(), cnab.valorAbatimento(), cnab.tipoPagador(), cnab.nomePagador(), cnab.endereco(),
-                cnab.primeiraMensagem(), cnab.cep(), cnab.sufixoCEP(), cnab.segundaMensagem(), cnab.sequencialRegistro(), Integer.parseInt(cnab.linha()), arquivo.orElse(null), dataCadastro
-        ).withDates(cnab.dataVencimento(), cnab.dataEmissao(), cnab.dataLimiteDescontoConcessao());
+        log.info("==========================> FINISHING PROCESSING LINE {} AT {}", cnab400.linha(), map.getString("time"));
+        return cnab;
     }
 
-    private void decisaoPorOcorrencia(Long identificacaoOcorrencia) {
+    private void decisaoPorOcorrencia(Long identificacaoOcorrencia, Cnab cnab) throws CnabProcessingException {
         var ocorrencia = identificacaoOcorrencia.intValue();
+        final ResponseEntity<Object> response;
         switch (ocorrencia) {
-            case 1 -> log.info("ocorrencia remessa {}", ocorrencia);
-            case 2 -> log.info("ocorrencia {}", ocorrencia);
-            case 3 -> log.info("ocorrencia {}", ocorrencia);
-            case 4 -> log.info("ocorrencia {}", ocorrencia);
-            case 5 -> log.info("ocorrencia {}", ocorrencia);
-            case 6 -> log.info("ocorrencia {}", ocorrencia);
-            default -> log.info("remessa");
+            case 1 -> {
+                log.info("ocorrencia remessa {}", ocorrencia);
+                response = serviceClient.findWallById();
+                log.info("STATUS CODE {}", response.getStatusCode());
+            }
+            case 2 -> {
+                log.info("ocorrencia {}", ocorrencia);
+                cnabService.ocorrencia02(cnab);
+            }
+            case 3 -> {
+                log.info("ocorrencia {}", ocorrencia);
+                cnabService.ocorrencia03(cnab);
+            }
+            case 4 -> {
+                log.info("ocorrencia {}", ocorrencia);
+                cnabService.ocorrencia04(cnab);
+            }
+            case 5 -> {
+                log.info("ocorrencia {}", ocorrencia);
+                cnabService.ocorrencia05(cnab);
+            }
+            case 6 -> {
+                log.info("ocorrencia {}", ocorrencia);
+                cnabService.ocorrencia06(cnab);
+            }
+            default -> throw new CnabProcessingException("Ocorrencia %s não reconhecida no sistema".formatted(ocorrencia), cnab.linha());
         }
     }
 

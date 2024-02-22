@@ -1,10 +1,9 @@
 package com.batsworks.batch.service.job;
 
 import com.batsworks.batch.cnab.read.*;
-import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
-import com.batsworks.batch.service.CnabService;
+import com.batsworks.batch.service.ArquivoService;
 import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -48,7 +47,7 @@ public class Cnab400Service {
     private final CnabJobListener cnabJobListener;
     private final CnabSkipListenner cnabSkipListenner;
     private final SkipPolicy skipPolicy;
-    private final CnabService cnabService;
+    private final ArquivoService arquivoService;
 
 
     @Bean()
@@ -79,7 +78,7 @@ public class Cnab400Service {
     @Bean
     @StepScope
     CnabReader<Cnab400> cnabReader(@Value("#{jobParameters['id']}") Long id) {
-        var arquivo = cnabService.findArquivoByID(id);
+        var arquivo = arquivoService.findArquivoEntityById(id);
         var file = Files.decompressData(arquivo.getFile());
         if (arquivo.getFileSize() != file.length) {
             log.error("Tamanho {} original e {} decompactado diferentes", arquivo.getFileSize(), file.length);

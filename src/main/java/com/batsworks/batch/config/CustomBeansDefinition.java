@@ -57,6 +57,8 @@ public class CustomBeansDefinition {
         taskExecutor.setCorePoolSize(9);
         taskExecutor.setQueueCapacity(10);
         taskExecutor.setThreadNamePrefix("BATSWORKS N-> :");
+        taskExecutor.setKeepAliveSeconds(5);
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
         taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         return taskExecutor;
     }

@@ -1,8 +1,8 @@
 package com.batsworks.batch.config.amqp;
 
 import com.batsworks.batch.domain.entity.Arquivo;
-import com.batsworks.batch.domain.enums.Status;
-import com.batsworks.batch.service.CnabService;
+import com.batsworks.batch.domain.enums.CnabStatus;
+import com.batsworks.batch.service.ArquivoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -23,24 +23,24 @@ import static com.batsworks.batch.utils.Formats.actualDateString;
 @RequiredArgsConstructor
 public class CnabFilaRead {
 
-    private final CnabService cnabService;
+    private final ArquivoService arquivoService;
     private final JobLauncher jobLauncher;
     private final Job jobCnab;
 
     @RabbitListener(queues = "arquivo.cnab")
     public void receveFile(Arquivo arquivoFila) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
 
-        var arquivo = cnabService.findArquivoByID(arquivoFila.getId());
-        if (arquivo.getSituacao().equals(Status.PROCESSADO_SUCESSO)) {
-            log.info("Arquivo {} já processado com sucesso nova tentativa realizada as {}", arquivo.getNome(), actualDateString());
+        var arquivo = arquivoService.findArquivoByID(arquivoFila.getId());
+        if (arquivo.situacao().equals(CnabStatus.PROCESSADO_SUCESSO)) {
+            log.info("Arquivo {} já processado com sucesso nova tentativa realizada as {}", arquivo.nome(), actualDateString());
             log.info("Apenas arquivo que não foram processado com sucesso podem ser reprocessados novamente");
             return;
         }
 
         JobParameters parameters = new JobParametersBuilder()
                 .addString("time", actualDateString())
-                .addJobParameter("path", arquivo.getNome(), String.class, false)
-                .addJobParameter("id", arquivo.getId(), Long.class, true)
+                .addJobParameter("path", arquivo.nome(), String.class, false)
+                .addJobParameter("id", arquivo.id(), Long.class, false)
                 .toJobParameters();
         jobLauncher.run(jobCnab, parameters);
     }

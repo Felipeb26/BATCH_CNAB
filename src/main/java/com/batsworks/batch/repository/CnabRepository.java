@@ -4,6 +4,7 @@ import com.batsworks.batch.domain.entity.CnabEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
@@ -23,4 +24,9 @@ public interface CnabRepository extends JpaRepository<CnabEntity, Long>, PagingA
     @Query(value = "SELECT c FROM FROM Cnab c WHERE c.arquivo.id=?1",
             countQuery = "SELECT count(c.id) FROM FROM Cnab c WHERE c.arquivo.id=?1")
     Page<CnabEntity> findAllById(Long id, Pageable pageable);
+
+    @Modifying
+    @Query("DELETE FROM Cnab c WHERE c.arquivo.id=?1")
+    void deleteAllByIdArquivo(Long idArquivo);
+
 }

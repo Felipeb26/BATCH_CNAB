@@ -14,7 +14,7 @@ public class CnabMapper {
     }
 
     public static CnabErroDTO cnabErroToDTO(CnabErro cnabErro) {
-        return new CnabErroDTO(cnabErro.getLineNumber(), cnabErro.getLinhha(), cnabErro.getErro(), cnabErro.getMessage(), cnabErro.getDataCadastro());
+        return new CnabErroDTO(cnabErro.getLineNumber(), cnabErro.getLinha(), cnabErro.getErro(), cnabErro.getMessage(), cnabErro.getDataCadastro());
     }
 
 }

@@ -1,13 +1,14 @@
 package com.batsworks.batch.cnab.read;
 
 import com.batsworks.batch.config.exception.BussinesException;
-import com.batsworks.batch.domain.enums.Status;
+import com.batsworks.batch.domain.enums.CnabStatus;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.repository.CnabErroRepository;
 import com.batsworks.batch.repository.CnabRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
+import org.springframework.batch.core.JobParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static com.batsworks.batch.utils.Formats.actualDateString;
@@ -30,7 +31,7 @@ public class CnabJobListener implements JobExecutionListener {
     @Override
     public void afterJob(JobExecution jobExecution) {
         log.info("==========================> STARTING TO UPDATE FILE AT {}", actualDateString());
-        var map = jobExecution.getJobParameters();
+        JobParameters map = jobExecution.getJobParameters();
 
         if (map.isEmpty()) throw new BussinesException(BAD_REQUEST, "JobParameters is Null");
         var path = map.getString("path");
@@ -45,7 +46,7 @@ public class CnabJobListener implements JobExecutionListener {
         var boletos = cnabRepository.countCnabsByIdArquivo(id);
         var valorTotal = cnabRepository.findValorTotalByIdArquivo(id);
 
-        arquivo.setSituacao(nonNull(erros) && erros > 0 ? Status.PROCESSADO_ERRO : Status.PROCESSADO_SUCESSO);
+        arquivo.setSituacao(nonNull(erros) && erros > 0 ? CnabStatus.PROCESSADO_ERRO : CnabStatus.PROCESSADO_SUCESSO);
         arquivo.setQuantidade(erros + boletos);
         arquivo.setValorTotal(valorTotal);
         arquivoRepository.save(arquivo);

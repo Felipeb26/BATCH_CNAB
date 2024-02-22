@@ -1,6 +1,6 @@
 package com.batsworks.batch.domain.entity;
 
-import com.batsworks.batch.domain.enums.Status;
+import com.batsworks.batch.domain.enums.CnabStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
@@ -33,7 +33,7 @@ public class Arquivo extends AbstractEntity<Arquivo> implements Serializable {
     private Long fileSize;
     private Long quantidade;
     @Enumerated(EnumType.STRING)
-    private Status situacao;
+    private CnabStatus situacao;
     @Lob
     @Nonnull
     @Column(name = "arquivo")

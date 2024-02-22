@@ -40,17 +40,17 @@ public class EhConfiguration {
                 .withExpiry(new ExpiryPolicy<>() {
                     @Override
                     public Duration getExpiryForCreation(Object key, Object value) {
-                        return Duration.ofSeconds(300);
+                        return Duration.ofSeconds(240);
                     }
 
                     @Override
                     public Duration getExpiryForAccess(Object key, Supplier<?> value) {
-                        return Duration.ofSeconds(300);
+                        return Duration.ofSeconds(240);
                     }
 
                     @Override
                     public Duration getExpiryForUpdate(Object key, Supplier<?> oldValue, Object newValue) {
-                        return Duration.ofSeconds(300);
+                        return Duration.ofSeconds(240);
                     }
                 }).build();
     }

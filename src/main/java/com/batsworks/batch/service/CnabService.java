@@ -1,18 +1,15 @@
 package com.batsworks.batch.service;
 
-import com.batsworks.batch.domain.entity.Arquivo;
-import com.batsworks.batch.domain.entity.CnabEntity;
-import com.batsworks.batch.domain.enums.CnabType;
-import com.batsworks.batch.domain.records.DefaultMessage;
-import org.springframework.web.multipart.MultipartFile;
+import com.batsworks.batch.domain.records.Cnab;
 
 public interface CnabService {
-    DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo);
+    void ocorrencia02(Cnab cnab);
 
-    byte[] downloadCnab(Boolean retorno, Long idArquivo);
+    void ocorrencia03(Cnab cnab);
 
-    Arquivo findArquivoByID(Long id);
+    void ocorrencia04(Cnab cnab);
 
-    String resetTempFile();
+    void ocorrencia05(Cnab cnab);
 
+    void ocorrencia06(Cnab cnab);
 }

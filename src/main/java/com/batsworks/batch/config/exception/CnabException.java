@@ -1,55 +1,19 @@
 package com.batsworks.batch.config.exception;
 
-import lombok.Getter;
+import jakarta.annotation.Nullable;
+import org.springframework.http.HttpStatusCode;
 
-import static java.lang.Long.parseLong;
+public class CnabException extends BussinesException {
 
-@Getter
-public class CnabException extends Exception {
-
-    private final Long actualLine;
-    private final int size;
-    private final String line;
-    private Long arquivo;
-
-    public CnabException(String message, int actualLine, String line, Long arquivo) {
-        super(message);
-        this.actualLine = assertToLongNumber(actualLine);
-        this.size = line.length();
-        this.line = line;
-        this.arquivo = arquivo;
+    public CnabException(HttpStatusCode status, @Nullable StatusEnum statusEnum, String message, Object[] args) {
+        super(status, statusEnum, message, args);
     }
 
-    public CnabException(String message, int actualLine, String line) {
-        super(message);
-        this.actualLine = assertToLongNumber(actualLine);
-        this.size = line.length();
-        this.line = line;
+    public CnabException(HttpStatusCode status, StatusEnum statusEnum, String message) {
+        super(status, statusEnum, message);
     }
 
-    public CnabException(String message, int actualLine) {
-        super(message);
-        this.actualLine = assertToLongNumber(actualLine);
-        this.size = 0;
-        this.line = "";
+    public CnabException(HttpStatusCode status, String message) {
+        super(status, message);
     }
-
-    public CnabException(String message, String line) {
-        super(message);
-        this.actualLine = 0L;
-        this.size = line.length();
-        this.line = line;
-    }
-
-    public CnabException(String message) {
-        super(message);
-        this.actualLine = 0L;
-        this.size = 0;
-        this.line = "";
-    }
-
-    private Long assertToLongNumber(Object o) {
-        return parseLong(o.toString());
-    }
-
 }

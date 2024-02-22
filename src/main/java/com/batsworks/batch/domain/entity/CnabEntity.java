@@ -27,7 +27,7 @@ public class CnabEntity extends AbstractEntity<Arquivo> implements Serializable 
     private String codigoBanco;
     private Integer campoMulta;
     private BigDecimal percentualMulta;
-    private Long nossoNumero;
+    private String nossoNumero;
     private String digitoConferenciaNumeroBanco;
     private Long descontoDia;
     private Long condicaoEmpissaoPapeladaCobranca;

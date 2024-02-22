@@ -7,6 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.UUID;
@@ -17,13 +20,6 @@ import static java.util.Objects.isNull;
 @UtilityClass
 public class Formats {
 
-    public static String mask(String value, Object... args) {
-        for (Object arg : args) {
-            value = value.concat("_" + arg);
-        }
-        value = value.trim();
-        return UUID.randomUUID() +"@"+ encodeByteToBASE64String(value.getBytes(StandardCharsets.UTF_8)).concat(".rem");
-    }
     public static String actualDateString() {
         var date = Calendar.getInstance();
         return String.format(
@@ -48,12 +44,14 @@ public class Formats {
         return new Date(dateFormat.parse(date).getTime());
     }
 
-    public static String encodeByteToBASE64String(byte[] data) {
-        return Base64.getEncoder().encodeToString(data);
+    public static String customDateTimeString(String pattern, LocalDateTime localDate){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        return localDate.format(formatter);
+    }
+    public static String customDateTimeString(String pattern){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        return LocalDateTime.now().format(formatter);
     }
 
-    public static byte[] decodeBASE64(byte[] data) {
-        return Base64.getDecoder().decode(data);
-    }
 
 }

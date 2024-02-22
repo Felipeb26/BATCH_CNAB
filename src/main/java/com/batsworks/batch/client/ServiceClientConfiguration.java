@@ -45,7 +45,7 @@ public class ServiceClientConfiguration {
 
         @Override
         public BussinesException decode(final String methodKey, Response response) {
-            String message = null;
+            String message;
             try {
                 if (response != null) {
                     message = stringDecoder.decode(response, String.class).toString();
