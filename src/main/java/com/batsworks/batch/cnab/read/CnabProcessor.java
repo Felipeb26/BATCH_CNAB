@@ -4,6 +4,7 @@ import com.batsworks.batch.client.ServiceClient;
 import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.config.exception.CnabProcessingException;
 import com.batsworks.batch.domain.entity.Arquivo;
+import com.batsworks.batch.domain.enums.TipoOCorrencia;
 import com.batsworks.batch.domain.enums.Zones;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
@@ -74,7 +75,8 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
 
 
         try {
-            decisaoPorOcorrencia(cnab400.identificacaoOcorrencia(), cnab);
+           var salvarBoletoCnab= decisaoPorOcorrencia(cnab400.identificacaoOcorrencia(), cnab);
+           if(!salvarBoletoCnab) return null;
         } catch (Exception e) {
             log.info(e.getMessage());
             throw new CnabProcessingException(e.getMessage(), cnab.linha());
@@ -84,37 +86,26 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         return cnab;
     }
 
-    private void decisaoPorOcorrencia(Long identificacaoOcorrencia, Cnab cnab) throws CnabProcessingException {
+    private Boolean decisaoPorOcorrencia(Long identificacaoOcorrencia, Cnab cnab) throws Exception {
         var ocorrencia = identificacaoOcorrencia.intValue();
         final ResponseEntity<Object> response;
+        log.info("ocorrencia {}\n", ocorrencia);
+        Boolean remessa = true;
+
         switch (ocorrencia) {
             case 1 -> {
-                log.info("ocorrencia remessa {}", ocorrencia);
                 response = serviceClient.findWallById();
                 log.info("STATUS CODE {}", response.getStatusCode());
+                return true;
             }
-            case 2 -> {
-                log.info("ocorrencia {}", ocorrencia);
-                cnabService.ocorrencia02(cnab);
-            }
-            case 3 -> {
-                log.info("ocorrencia {}", ocorrencia);
-                cnabService.ocorrencia03(cnab);
-            }
-            case 4 -> {
-                log.info("ocorrencia {}", ocorrencia);
-                cnabService.ocorrencia04(cnab);
-            }
-            case 5 -> {
-                log.info("ocorrencia {}", ocorrencia);
-                cnabService.ocorrencia05(cnab);
-            }
-            case 6 -> {
-                log.info("ocorrencia {}", ocorrencia);
-                cnabService.ocorrencia06(cnab);
-            }
+            case 2 -> remessa = cnabService.ocorrencia02(cnab);
+            case 3 -> remessa = cnabService.ocorrencia03(cnab);
+            case 4 -> remessa = cnabService.ocorrencia04(cnab);
+            case 5 -> remessa = cnabService.ocorrencia05(cnab);
+            case 6 -> remessa = cnabService.ocorrencia06(cnab);
             default -> throw new CnabProcessingException("Ocorrencia %s não reconhecida no sistema".formatted(ocorrencia), cnab.linha());
         }
+        return remessa;
     }
 
 }

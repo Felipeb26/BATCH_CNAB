@@ -1,15 +1,16 @@
 package com.batsworks.batch.service;
 
+import com.batsworks.batch.config.exception.CnabProcessingException;
 import com.batsworks.batch.domain.records.Cnab;
 
 public interface CnabService {
-    void ocorrencia02(Cnab cnab);
+    Boolean ocorrencia02(Cnab cnab) throws Exception;
 
-    void ocorrencia03(Cnab cnab);
+    Boolean ocorrencia03(Cnab cnab) throws Exception;
 
-    void ocorrencia04(Cnab cnab);
+    Boolean ocorrencia04(Cnab cnab) throws Exception;
 
-    void ocorrencia05(Cnab cnab);
+    Boolean ocorrencia05(Cnab cnab) throws Exception;
 
-    void ocorrencia06(Cnab cnab);
+    Boolean ocorrencia06(Cnab cnab) throws Exception;
 }

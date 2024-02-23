@@ -10,6 +10,7 @@ import com.batsworks.batch.domain.records.ArquivoDTO;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.domain.records.PageDTO;
 import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.repository.BoletoAlteracaoRepository;
 import com.batsworks.batch.repository.CnabErroRepository;
 import com.batsworks.batch.repository.CnabRepository;
 import com.batsworks.batch.service.ArquivoService;
@@ -35,6 +36,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @Service
 @RequiredArgsConstructor
 public class ArquivoServiceImpl implements ArquivoService {
+    private final BoletoAlteracaoRepository boletoAlteracaoRepository;
 
     private final ArquivoRepository arquivoRepository;
     private final JobLauncher asyncWrite;
@@ -117,6 +119,7 @@ public class ArquivoServiceImpl implements ArquivoService {
         try {
             cnabErroRepository.deleteAllByIdArquivo(id);
             cnabRepository.deleteAllByIdArquivo(id);
+            boletoAlteracaoRepository.deleteAllByIdArquivo(id);
             arquivoRepository.deleteById(id);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

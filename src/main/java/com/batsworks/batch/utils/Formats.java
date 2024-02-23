@@ -3,16 +3,12 @@ package com.batsworks.batch.utils;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.StandardCharsets;
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Base64;
 import java.util.Calendar;
-import java.util.UUID;
 
 import static java.util.Objects.isNull;
 
@@ -44,14 +40,14 @@ public class Formats {
         return new Date(dateFormat.parse(date).getTime());
     }
 
-    public static String customDateTimeString(String pattern, LocalDateTime localDate){
+    public static String customDateTimeString(String pattern, LocalDateTime localDate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
         return localDate.format(formatter);
     }
-    public static String customDateTimeString(String pattern){
+
+    public static String customDateTimeString(String pattern) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
         return LocalDateTime.now().format(formatter);
     }
-
 
 }

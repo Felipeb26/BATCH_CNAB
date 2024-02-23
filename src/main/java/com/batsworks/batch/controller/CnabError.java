@@ -1,6 +1,6 @@
 package com.batsworks.batch.controller;
 
-import com.batsworks.batch.service.CnabErorsService;
+import com.batsworks.batch.service.CnabErrorService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Endpoint Error")
 public class CnabError {
 
-    private final CnabErorsService service;
+    private final CnabErrorService service;
 
     @GetMapping("/")
     public ResponseEntity<Object> string(@PageableDefault(direction = Sort.Direction.DESC, sort = "dataCadastro") Pageable pageable) {

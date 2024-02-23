@@ -13,4 +13,7 @@ public interface CnabErroRepository extends JpaRepository<CnabErro, Long> {
     @Modifying
     @Query("DELETE FROM CnabErro c WHERE c.arquivo.id=?1")
     void deleteAllByIdArquivo(Long idArquivo);
+
+    @Query("FROM CnabErro ce WHERE ce.lineNumber=?1 and ce.arquivo.id=?2")
+    CnabErro findByNumeroLinhaAndIdArquivo(Long lineNumber, Long idArquivo);
 }

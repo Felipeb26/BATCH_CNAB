@@ -2,6 +2,7 @@ package com.batsworks.batch.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -12,9 +13,10 @@ import java.sql.Date;
 @Builder
 @Entity(name = "Cnab")
 @Table(name = "cnab")
+@DynamicUpdate
 @AllArgsConstructor
 @NoArgsConstructor
-public class CnabEntity extends AbstractEntity<Arquivo> implements Serializable {
+public class CnabEntity extends AbstractEntity<CnabEntity> implements Serializable {
 
     private String identRegistro;
     private String agenciaDebito;

@@ -29,4 +29,6 @@ public interface CnabRepository extends JpaRepository<CnabEntity, Long>, PagingA
     @Query("DELETE FROM Cnab c WHERE c.arquivo.id=?1")
     void deleteAllByIdArquivo(Long idArquivo);
 
+    @Query("FROM Cnab c WHERE c.numeroDocumento=?1")
+    CnabEntity findByCnabNumeroTituloLike(String numeroTitulo);
 }
