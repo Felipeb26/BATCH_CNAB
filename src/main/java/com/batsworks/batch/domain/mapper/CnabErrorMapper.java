@@ -7,10 +7,10 @@ import lombok.experimental.UtilityClass;
 import java.util.List;
 
 @UtilityClass
-public class CnabMapper {
+public class CnabErrorMapper {
 
     public static List<CnabErroDTO> cnabErrosToDTO(List<CnabErro> cnabErros) {
-        return cnabErros.stream().distinct().map(CnabMapper::cnabErroToDTO).toList();
+        return cnabErros.stream().distinct().map(CnabErrorMapper::cnabErroToDTO).toList();
     }
 
     public static CnabErroDTO cnabErroToDTO(CnabErro cnabErro) {

@@ -51,6 +51,7 @@ public record Cnab(
         String sequencialRegistro,
         Integer linha,
         Arquivo arquivo,
+        String situacao,
         LocalDateTime dataCadastro) {
 
     public Cnab withDates(String dataVencimento, String dataEmissao, String dataLimiteDescontoConcessao) throws ParseException {
@@ -64,7 +65,7 @@ public record Cnab(
                 identificacaoOcorrencia, numeroDocumento, dataVenciment, valorTitulo, especieTitulo, dataEmissa,
                 primeiraInstrucao, segundaInstrucao, moraDia, dataLimiteDescontoConcessa, valorDesconto, valorIOF,
                 valorAbatimento, tipoPagador, nomePagador, endereco, primeiraMensagem, cep, sufixoCEP, segundaMensagem,
-                sequencialRegistro, linha, arquivo, dataCadastro);
+                sequencialRegistro, linha, arquivo, situacao, dataCadastro);
     }
 
 }

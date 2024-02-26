@@ -1,7 +1,6 @@
 package com.batsworks.batch.domain.entity;
 
 import com.batsworks.batch.domain.enums.CnabStatus;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.annotation.Nonnull;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,7 +11,6 @@ import org.springframework.cache.annotation.Cacheable;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -40,14 +38,5 @@ public class Arquivo extends AbstractEntity<Arquivo> implements Serializable {
     private byte[] file;
     private BigDecimal valorTotal;
     private String observacao;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "arquivo")
-    @JsonBackReference
-    @ToString.Exclude
-    private Set<CnabEntity> cnab;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "arquivo")
-    @JsonBackReference
-    @ToString.Exclude
-    private Set<CnabErro> cnabErros;
-
 }
 

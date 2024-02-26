@@ -8,6 +8,8 @@ BEGIN
         fileSize VARCHAR(255),
         quantidade INT,
         situacao VARCHAR(255),
+        observacao VARCHAR(100),
+        valorTotal DECIMAL,
         arquivo VARBINARY(MAX),
         dataCadastro DATETIME,
         dataAtualizacao DATETIME
@@ -74,8 +76,25 @@ BEGIN
         sequencialRegistro VARCHAR(255),
         idArquivo INT,
         linha INT,
+        situacao VARCHAR(100),
         dataCadastro DATETIME,
         dataAtualizacao DATETIME,
         FOREIGN KEY (idArquivo) REFERENCES arquivo(id)
+    );
+END
+
+IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHER TABLE_NAME = 'boleto_alteracao')
+BEGIN
+    CREATE TABLE boleto_alteracao(
+       id INT IDENTITY(1,1) PRIMARY KEY,
+       camposALterados VARCHAR(255),
+       camposAntigos VARCHAR(255),
+       tipoDeAlteracao VARCHAR(255),
+       boletoAlterado INT,
+       idArquivo INT,
+       dataCadastro DATETIME,
+       dataAtualizacao DATETIME,
+       FOREIGN KEY (boletoAlterado) REFERENCES cnab(id),
+       FOREIGN KEY (idArquivo) REFERENCES arquivo(id)
     );
 END

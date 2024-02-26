@@ -42,8 +42,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     // Database dependencies
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.1.4'
-    implementation 'com.mysql:mysql-connector-j:8.1.0'
-    implementation 'com.microsoft.sqlserver:mssql-jdbc:11.2.3.jre17'
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc'
     implementation 'com.mchange:c3p0:0.9.5.5'
     //CACHE
     implementation 'org.ehcache:ehcache:3.10.8'

@@ -1,10 +1,16 @@
 package com.batsworks.batch.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
+import static java.util.Objects.deepEquals;
+import static java.util.Objects.nonNull;
+
+@Slf4j
 @Component
 public class Converts {
 
@@ -21,23 +27,31 @@ public class Converts {
         return map;
     }
 
-    public String alteracoesEncontradas(Map<String, Object> objAtual, Map<String, Object> objAtualizado) {
-        Set<String> alteracoes = new HashSet<>(objAtual.keySet());
-        alteracoes.addAll(objAtualizado.keySet());
-        alteracoes.removeAll(objAtual.keySet());
+    public Map<String, Object> alteracoes(Map<String, Object> objAtual, Map<String, Object> objAtualizado) {
+        Map<String, Object> map = new HashMap<>();
 
-        return alteracoes.toString();
-    }
-
-    public String igualdades(Map<String, Object> objAtual, Map<String, Object> objAtualizado) {
-        List<String> continua = new ArrayList<>();
-
-        for (String key : objAtual.keySet()) {
-            if (objAtualizado.containsKey(key) && objAtual.get(key).equals(objAtualizado.get(key))) {
-                continua.add(objAtual.get(key).toString());
+        for (Map.Entry<String, Object> entry : objAtual.entrySet()) {
+            var newValue = objAtualizado.get(entry.getKey());
+            if (nonNull(newValue) && nonNull(entry.getValue()) && !deepEquals(entry.getValue(), newValue)) {
+                if (!entry.getValue().equals(newValue)) {
+                    map.put(entry.getKey(), newValue);
+                }
             }
         }
-        return continua.toString();
+        return map;
+    }
+
+    public Map<String, Object> camposAntigos(Map<String, Object> objAtual, Map<String, Object> objAtualizado) {
+        Map<String, Object> map = new HashMap<>();
+        for (Map.Entry<String, Object> entry : objAtual.entrySet()) {
+            String chave = entry.getKey();
+            Object valorOriginal = entry.getValue();
+            Object valorNovo = objAtualizado.get(chave);
+            if (valorNovo != null && !valorNovo.equals(valorOriginal)) {
+                map.put(chave, valorOriginal);
+            }
+        }
+        return map;
     }
 
 }

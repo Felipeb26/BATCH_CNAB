@@ -58,7 +58,8 @@ public class ArquivoServiceImpl implements ArquivoService {
                     .observacao(observcao)
                     .situacao(CnabStatus.PROCESSANDO).build();
 
-            if (!validFile(file, fileName)) throw new BussinesException(BAD_REQUEST, "Arquivo Invalido");
+            if (Boolean.FALSE.equals(validFile(file, fileName)))
+                throw new BussinesException(BAD_REQUEST, "Arquivo Invalido");
 
             var data = compressData(file.getBytes());
             arquivo.setFile(data);
@@ -78,7 +79,7 @@ public class ArquivoServiceImpl implements ArquivoService {
     @Override
     public byte[] downloadCnab(Boolean retorno, Long idArquivo) {
         try {
-            if (!retorno) {
+            if (Boolean.FALSE.equals(retorno)) {
                 byte[] arquivo = arquivoRepository.findArquivoById(idArquivo).orElseThrow(() ->
                         new BussinesException(BAD_REQUEST, "Arquivo não encontrado"));
                 return decompressData(arquivo);
@@ -117,9 +118,9 @@ public class ArquivoServiceImpl implements ArquivoService {
     @Override
     public void deleteArquivo(Long id) {
         try {
+            boletoAlteracaoRepository.deleteAllByIdArquivo(id);
             cnabErroRepository.deleteAllByIdArquivo(id);
             cnabRepository.deleteAllByIdArquivo(id);
-            boletoAlteracaoRepository.deleteAllByIdArquivo(id);
             arquivoRepository.deleteById(id);
         } catch (Exception e) {
             log.error(e.getMessage(), e);

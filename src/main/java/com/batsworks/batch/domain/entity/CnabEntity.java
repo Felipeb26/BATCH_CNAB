@@ -1,12 +1,13 @@
 package com.batsworks.batch.domain.entity;
 
+import com.batsworks.batch.domain.enums.SituacaoCnab;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.sql.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -36,14 +37,14 @@ public class CnabEntity extends AbstractEntity<CnabEntity> implements Serializab
     private String boletoDebitoAutomatico;
     private Long identificacaoOcorrencia;
     private String numeroDocumento;
-    private Date dataVencimento;
+    private LocalDate dataVencimento;
     private BigDecimal valorTitulo;
     private Long especieTitulo;
-    private Date dataEmissao;
+    private LocalDate dataEmissao;
     private String primeiraInstrucao;
     private String segundaInstrucao;
     private BigDecimal moraDia;
-    private Date dataLimiteDescontoConcessao;
+    private LocalDate dataLimiteDescontoConcessao;
     private BigDecimal valorDesconto;
     private BigDecimal valorIOF;
     private String valorAbatimento;
@@ -56,6 +57,8 @@ public class CnabEntity extends AbstractEntity<CnabEntity> implements Serializab
     private String segundaMensagem;
     private String sequencialRegistro;
     private Long linha;
+    @Enumerated(EnumType.STRING)
+    private SituacaoCnab situacao;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idArquivo")
     private Arquivo arquivo;

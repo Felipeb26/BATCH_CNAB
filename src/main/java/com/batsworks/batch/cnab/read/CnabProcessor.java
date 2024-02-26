@@ -4,7 +4,7 @@ import com.batsworks.batch.client.ServiceClient;
 import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.config.exception.CnabProcessingException;
 import com.batsworks.batch.domain.entity.Arquivo;
-import com.batsworks.batch.domain.enums.TipoOCorrencia;
+import com.batsworks.batch.domain.enums.SituacaoCnab;
 import com.batsworks.batch.domain.enums.Zones;
 import com.batsworks.batch.domain.records.Cnab;
 import com.batsworks.batch.domain.records.Cnab400;
@@ -65,20 +65,23 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         }
 
         var dataCadastro = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
-        var cnab = new Cnab(null, cnab400.identRegistro(), cnab400.agenciaDebito(), cnab400.digitoAgencia(), cnab400.razaoAgencia(), cnab400.contaCorrente(), cnab400.digitoConta(), cnab400.identBeneficiario(),
-                cnab400.controleParticipante(), cnab400.codigoBanco(), cnab400.campoMulta(), cnab400.percentualMulta(), cnab400.nossoNumero(), cnab400.digitoConferenciaNumeroBanco(),
-                cnab400.descontoDia(), cnab400.condicaoEmpissaoPapeladaCobranca(), cnab400.boletoDebitoAutomatico(), cnab400.identificacaoOcorrencia(), cnab400.numeroDocumento(),
-                null, cnab400.valorTitulo(), cnab400.especieTitulo(), null, cnab400.primeiraInstrucao(), cnab400.segundaInstrucao(), cnab400.moraDia(),
-                null, cnab400.valorDesconto(), cnab400.valorIOF(), cnab400.valorAbatimento(), cnab400.tipoPagador(), cnab400.nomePagador(), cnab400.endereco(),
-                cnab400.primeiraMensagem(), cnab400.cep(), cnab400.sufixoCEP(), cnab400.segundaMensagem(), cnab400.sequencialRegistro(), Integer.parseInt(cnab400.linha()), arquivo.orElse(null), dataCadastro
-        ).withDates(cnab400.dataVencimento(), cnab400.dataEmissao(), cnab400.dataLimiteDescontoConcessao());
+        var cnab = new Cnab(null, cnab400.identRegistro(), cnab400.agenciaDebito(), cnab400.digitoAgencia(), cnab400.razaoAgencia(), cnab400.contaCorrente(), cnab400.digitoConta(),
+                cnab400.identBeneficiario(), cnab400.controleParticipante(), cnab400.codigoBanco(), cnab400.campoMulta(), cnab400.percentualMulta(), cnab400.nossoNumero(),
+                cnab400.digitoConferenciaNumeroBanco(), cnab400.descontoDia(), cnab400.condicaoEmpissaoPapeladaCobranca(), cnab400.boletoDebitoAutomatico(), cnab400.identificacaoOcorrencia(),
+                cnab400.numeroDocumento(), null, cnab400.valorTitulo(), cnab400.especieTitulo(), null, cnab400.primeiraInstrucao(), cnab400.segundaInstrucao(),
+                cnab400.moraDia(), null, cnab400.valorDesconto(), cnab400.valorIOF(), cnab400.valorAbatimento(), cnab400.tipoPagador(), cnab400.nomePagador(),
+                cnab400.endereco(), cnab400.primeiraMensagem(), cnab400.cep(), cnab400.sufixoCEP(), cnab400.segundaMensagem(), cnab400.sequencialRegistro(), Integer.parseInt(cnab400.linha()),
+                arquivo.orElse(null), SituacaoCnab.AGUARDANDO_REGISTRO.name(), dataCadastro).withDates(cnab400.dataVencimento(), cnab400.dataEmissao(), cnab400.dataLimiteDescontoConcessao());
 
 
         try {
-           var salvarBoletoCnab= decisaoPorOcorrencia(cnab400.identificacaoOcorrencia(), cnab);
-           if(!salvarBoletoCnab) return null;
+            var salvarBoletoCnab = decisaoPorOcorrencia(cnab400.identificacaoOcorrencia(), cnab);
+            if (Boolean.FALSE.equals(salvarBoletoCnab)) return null;
+        } catch (CnabProcessingException e) {
+            log.error(e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
-            log.info(e.getMessage());
+            log.error(e.getMessage(), e);
             throw new CnabProcessingException(e.getMessage(), cnab.linha());
         }
 
@@ -90,7 +93,7 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
         var ocorrencia = identificacaoOcorrencia.intValue();
         final ResponseEntity<Object> response;
         log.info("ocorrencia {}\n", ocorrencia);
-        Boolean remessa = true;
+        Boolean remessa = false;
 
         switch (ocorrencia) {
             case 1 -> {
@@ -98,12 +101,14 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
                 log.info("STATUS CODE {}", response.getStatusCode());
                 return true;
             }
-            case 2 -> remessa = cnabService.ocorrencia02(cnab);
-            case 3 -> remessa = cnabService.ocorrencia03(cnab);
-            case 4 -> remessa = cnabService.ocorrencia04(cnab);
-            case 5 -> remessa = cnabService.ocorrencia05(cnab);
-            case 6 -> remessa = cnabService.ocorrencia06(cnab);
-            default -> throw new CnabProcessingException("Ocorrencia %s não reconhecida no sistema".formatted(ocorrencia), cnab.linha());
+            case 2 -> cnabService.ocorrencia02(cnab);
+            case 4 -> cnabService.ocorrencia04(cnab);
+            case 5 -> cnabService.ocorrencia05(cnab);
+            case 6 -> cnabService.ocorrencia06(cnab);
+            case 7 -> cnabService.ocorrencia07(cnab);
+            case 8 -> cnabService.ocorrencia08(cnab);
+            default ->
+                    throw new CnabProcessingException("Ocorrencia %s não reconhecida no sistema".formatted(ocorrencia), cnab.linha());
         }
         return remessa;
     }

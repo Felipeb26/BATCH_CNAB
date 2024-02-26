@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,15 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    private ResponseEntity<Object> response(MissingServletRequestPartException missingParameter, HttpServletRequest httpServletRequest) {
+        return new ResponseEntity<>(BussinesExceptionEntity.builder()
+                .path(httpServletRequest.getServletPath())
+                .error(String.format("O Parametro %s não foi encontrado durante a operação!", missingParameter.getRequestPartName()))
+                .errors(new Object[]{missingParameter.getMessage()})
+                .build(), BAD_REQUEST);
+    }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     private ResponseEntity<Object> response(MissingServletRequestParameterException missingParameter, HttpServletRequest httpServletRequest) {

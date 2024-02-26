@@ -4,7 +4,6 @@ package com.batsworks.batch.domain.entity;
 import com.batsworks.batch.domain.enums.Zones;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -27,6 +26,7 @@ public abstract class AbstractEntity<T> implements Serializable {
     @Setter(AccessLevel.PUBLIC)
     private Long id;
     @CreatedDate
+    @Column(updatable = false)
     @Getter(AccessLevel.PUBLIC)
     @Setter(AccessLevel.PUBLIC)
     private LocalDateTime dataCadastro;
@@ -41,7 +41,7 @@ public abstract class AbstractEntity<T> implements Serializable {
     }
 
     @PreUpdate
-    private void persistUpdate(){
+    private void persistUpdate() {
         this.dataAtualizacao = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
     }
 }

@@ -17,7 +17,6 @@ public class CnabReader<T> extends FlatFileItemReader<T> {
         super.setStrict(false);
     }
 
-
     @Override
     public void setResource(Resource resource) {
         if (nonNull(stream)) {
@@ -26,4 +25,5 @@ public class CnabReader<T> extends FlatFileItemReader<T> {
             super.setResource(resource);
         }
     }
+
 }

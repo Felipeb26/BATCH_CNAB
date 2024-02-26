@@ -28,6 +28,10 @@ public class Formats {
         );
     }
 
+    /**
+     * Os metodos parseDate são utilizados para transformar
+     * string em Date
+     */
     public static Date parseDate(String date) throws ParseException {
         var dateFormat = new SimpleDateFormat("ddMMyy");
         if (isNull(date) || date.isBlank()) return null;

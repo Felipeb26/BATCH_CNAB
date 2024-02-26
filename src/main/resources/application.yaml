@@ -43,8 +43,8 @@ spring:
     hikari.connection-timeout: 5000
     url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
-    username: sa
-    password: root@123
+    username: SA
+    password: Felipe@2001
   jpa:
     database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:

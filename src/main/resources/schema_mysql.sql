@@ -2,16 +2,15 @@ CREATE DATABASE IF NOT EXISTS CNAB_CODES;
 
 CREATE TABLE IF NOT EXISTS arquivo(
 	id int PRIMARY KEY auto_increment,
-	nome varchar(255),
+	name varchar(255),
 	extension varchar(255),
 	fileSize varchar(255),
 	quantidade int,
 	situacao varchar(255),
-	arquivo longblob,
+	arquivo blob,
 	valorTotal decimal,
 	observacao varchar(255),
-	dataCadastro datetime,
-    dataAtualizacao datetime
+	dataCadastro datetime
 );
 
 CREATE TABLE IF NOT EXISTS cnab_erro(
@@ -22,7 +21,6 @@ CREATE TABLE IF NOT EXISTS cnab_erro(
   	erro varchar(255),
   	idArquivo int,
 	dataCadastro datetime,
-    dataAtualizacao datetime,
     foreign key (idArquivo) references arquivo(id)
 );
 
@@ -66,8 +64,6 @@ CREATE TABLE IF NOT EXISTS cnab(
     segundaMensagem varchar(255),
     sequencialRegistro varchar(255),
     idArquivo int,
-    linha int,
     dataCadastro datetime,
-    dataAtualizacao datetime,
     foreign key (idArquivo) references arquivo(id)
 );
