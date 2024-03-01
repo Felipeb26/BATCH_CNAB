@@ -120,7 +120,12 @@ public class CnabServiceImpl implements CnabService {
         cnabEntityMapped.setSituacao(SituacaoCnab.AGUARDANDO_ALTERACAO);
         cnabRepository.save(cnabEntityMapped);
 
-        var boletoAlteracao = BoletoAlteracao.builder().camposAlterados(alteracoes.isEmpty() ? null : alteracoes.toString()).camposAntigos(alteracoes.isEmpty() ? null : continua.toString()).tipoDeAlteracao(TipoOCorrencia.ALTERACAO_DO_VENCIMENTO.name()).boletoAlterado(cnabEntity).arquivo(cnab.arquivo()).build();
+        var boletoAlteracao = BoletoAlteracao.builder()
+                .camposAlterados(alteracoes.isEmpty() ? null : alteracoes.toString())
+                .camposAntigos(alteracoes.isEmpty() ? null : continua.toString())
+                .tipoDeAlteracao(TipoOCorrencia.ALTERACAO_DO_VENCIMENTO.name())
+                .boletoAlterado(cnabEntity)
+                .arquivo(cnab.arquivo()).build();
         boletoAlteracaoRepository.save(boletoAlteracao);
     }
 
@@ -144,7 +149,12 @@ public class CnabServiceImpl implements CnabService {
         cnabEntityMapped.setArquivo(cnabEntity.getArquivo());
         cnabRepository.save(cnabEntityMapped);
 
-        var boletoAlteracao = BoletoAlteracao.builder().camposAlterados(alteracoes.isEmpty() ? null : alteracoes.toString()).camposAntigos(alteracoes.isEmpty() ? null : continua.toString()).tipoDeAlteracao(TipoOCorrencia.ALTERACAO_DO_CONTROLE_DO_PARTICIPANTE.name()).boletoAlterado(cnabEntity).arquivo(cnab.arquivo()).build();
+        var boletoAlteracao = BoletoAlteracao.builder()
+                .camposAlterados(alteracoes.isEmpty() ? null : alteracoes.toString())
+                .camposAntigos(alteracoes.isEmpty() ? null : continua.toString())
+                .tipoDeAlteracao(TipoOCorrencia.ALTERACAO_DO_CONTROLE_DO_PARTICIPANTE.name())
+                .boletoAlterado(cnabEntity)
+                .arquivo(cnab.arquivo()).build();
         boletoAlteracaoRepository.save(boletoAlteracao);
     }
 
@@ -168,7 +178,41 @@ public class CnabServiceImpl implements CnabService {
         cnabEntityMapped.setArquivo(cnabEntity.getArquivo());
         cnabRepository.save(cnabEntityMapped);
 
-        var boletoAlteracao = BoletoAlteracao.builder().camposAlterados(alteracoes.isEmpty() ? null : alteracoes.toString()).camposAntigos(alteracoes.isEmpty() ? null : continua.toString()).tipoDeAlteracao(TipoOCorrencia.ALTERACAO_DE_SEU_NUMERO.name()).boletoAlterado(cnabEntity).arquivo(cnab.arquivo()).build();
+        var boletoAlteracao = BoletoAlteracao.builder()
+                .camposAlterados(alteracoes.isEmpty() ? null : alteracoes.toString())
+                .camposAntigos(alteracoes.isEmpty() ? null : continua.toString())
+                .tipoDeAlteracao(TipoOCorrencia.ALTERACAO_DE_SEU_NUMERO.name())
+                .boletoAlterado(cnabEntity)
+                .arquivo(cnab.arquivo()).build();
+        boletoAlteracaoRepository.save(boletoAlteracao);
+    }
+
+    @Override
+    public void ocorrencia20(Cnab cnab) throws Exception {
+        var cnabEntity = cnabRepository.findByCnabNumeroTituloLike(cnab.numeroDocumento());
+        if (isNull(cnabEntity)) throw new CnabProcessingException(NOT_FOUND_BOLETO, cnab.linha());
+
+        var objAtual = converts.convertToHashMap(cnabEntity);
+        var objAtualizado = converts.convertToHashMap(cnab);
+
+        var alteracoes = converts.alteracoes(objAtual, objAtualizado);
+        removeEntityPattern(alteracoes);
+        var continua = converts.camposAntigos(objAtual, alteracoes);
+
+        log.info("{} \n", continua);
+        log.info("{} \n", alteracoes);
+
+        var cnabEntityMapped = mapper.convertValue(cnab, CnabEntity.class);
+        cnabEntityMapped.setId(cnabEntity.getId());
+        cnabEntityMapped.setArquivo(cnabEntity.getArquivo());
+        cnabRepository.save(cnabEntityMapped);
+
+        var boletoAlteracao = BoletoAlteracao.builder()
+                .camposAlterados(alteracoes.isEmpty() ? null : alteracoes.toString())
+                .camposAntigos(alteracoes.isEmpty() ? null : continua.toString())
+                .tipoDeAlteracao(TipoOCorrencia.ALTERACAO_DE_VALOR.name())
+                .boletoAlterado(cnabEntity)
+                .arquivo(cnab.arquivo()).build();
         boletoAlteracaoRepository.save(boletoAlteracao);
     }
 

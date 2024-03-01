@@ -107,6 +107,7 @@ public class CnabProcessor implements ItemProcessor<Cnab400, Cnab> {
             case 6 -> cnabService.ocorrencia06(cnab);
             case 7 -> cnabService.ocorrencia07(cnab);
             case 8 -> cnabService.ocorrencia08(cnab);
+            case 20 -> cnabService.ocorrencia20(cnab);
             default ->
                     throw new CnabProcessingException("Ocorrencia %s não reconhecida no sistema".formatted(ocorrencia), cnab.linha());
         }

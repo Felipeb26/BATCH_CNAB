@@ -14,4 +14,6 @@ public interface CnabService {
     void ocorrencia07(Cnab cnab) throws Exception;
 
     void ocorrencia08(Cnab cnab) throws Exception;
+
+    void ocorrencia20(Cnab cnab) throws Exception;
 }
