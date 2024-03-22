@@ -2,8 +2,6 @@ package com.batsworks.batch.service.job;
 
 import com.batsworks.batch.cnab.write.CnabWriteProcessor;
 import com.batsworks.batch.domain.entity.CnabEntity;
-import com.batsworks.batch.domain.records.Cnab;
-import com.batsworks.batch.domain.records.Cnab400;
 import com.batsworks.batch.repository.CnabRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -15,7 +13,6 @@ import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.launch.support.TaskExecutorJobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.data.RepositoryItemReader;
 import org.springframework.batch.item.data.builder.RepositoryItemReaderBuilder;
 import org.springframework.batch.item.file.FlatFileItemWriter;
@@ -29,13 +26,12 @@ import org.springframework.core.task.TaskExecutor;
 import org.springframework.data.domain.Sort;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.batsworks.batch.utils.Formats.actualDateString;
 import static com.batsworks.batch.utils.Files.randomFileName;
+import static com.batsworks.batch.utils.Formats.actualDateString;
 
 @Configuration
 @RequiredArgsConstructor

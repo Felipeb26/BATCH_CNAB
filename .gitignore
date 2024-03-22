@@ -38,3 +38,5 @@ out/
 data
 data/
 tmp
+
+gradle.properties

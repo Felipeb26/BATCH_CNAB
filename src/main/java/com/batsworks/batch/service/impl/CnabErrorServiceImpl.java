@@ -15,8 +15,6 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import static java.util.Objects.nonNull;
-
 @Service
 @RequiredArgsConstructor
 public class CnabErrorServiceImpl implements CnabErrorService {
@@ -32,10 +30,8 @@ public class CnabErrorServiceImpl implements CnabErrorService {
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRES_NEW)
-    public CnabErro savCnabErro(CnabErro cnabErro) {
-        var erro = cnabErroRepository.findByNumeroLinhaAndIdArquivo(cnabErro.getLineNumber(), cnabErro.getArquivo().getId());
-        if (nonNull(erro)) return null;
-        return cnabErroRepository.save(cnabErro);
+    public void saveCnabErro(CnabErro cnabErro) {
+        cnabErroRepository.findByNumeroLinhaAndIdArquivo(cnabErro.getLineNumber(), cnabErro.getArquivo().getId());
     }
 
 }

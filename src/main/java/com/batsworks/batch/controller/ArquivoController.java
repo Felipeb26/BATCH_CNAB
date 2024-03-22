@@ -1,6 +1,6 @@
 package com.batsworks.batch.controller;
 
-import com.batsworks.batch.domain.enums.CnabType;
+import com.batsworks.batch.domain.enums.FileType;
 import com.batsworks.batch.domain.records.ArquivoDTO;
 import com.batsworks.batch.domain.records.DefaultMessage;
 import com.batsworks.batch.domain.records.PageDTO;
@@ -30,8 +30,8 @@ public class ArquivoController {
     @PostMapping(value = "upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @CacheEvict(allEntries = true)
     public ResponseEntity<DefaultMessage> upload(@RequestParam("file") MultipartFile file,
-                                                 @RequestParam(value = "type", defaultValue = "CNAB400") CnabType type,
-                                                 @RequestParam("observacao") String observacao) {
+                                                 @RequestParam(value = "type", defaultValue = "CNAB400") FileType type,
+                                                 @RequestParam(value = "observacao", required = false) String observacao) {
         return ResponseEntity.ok().body(service.uploadCnabFile(file, type, observacao));
     }
 

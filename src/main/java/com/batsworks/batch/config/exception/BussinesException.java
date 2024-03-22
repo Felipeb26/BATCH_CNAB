@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class BussinesException extends ResponseStatusException {
 
     private final String message;
-    private final Object[] args;
+    private final transient Object[] args;
     private final StatusEnum statusEnum;
 
     public BussinesException(HttpStatusCode status, @Nullable StatusEnum statusEnum, String message, Object[] args) {

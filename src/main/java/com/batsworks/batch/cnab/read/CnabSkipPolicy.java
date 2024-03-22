@@ -14,8 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
-import static java.util.Objects.nonNull;
-
 /**
  * A linha que mostra no log assim como a salva nem sempre é a verdadeira já
  * que a aplicação usa multithread para paralelismo asyncrono
@@ -36,40 +34,33 @@ public class CnabSkipPolicy implements SkipPolicy {
         Long id = (long) parameters.get("id");
 
         if (t instanceof FlatFileParseException parseException && (startWith(parseException.getInput()))) {
-            return true;
+            log.info("AN EXCEPION {}",parseException.getMessage());
         }
 
         if (t.getCause() instanceof IOException) {
             log.error("## AN ILLEGAL ERROR HAS HAPPEN: {}, id: {}\n", t.getMessage(), id);
-            return true;
         }
 
         var arquivo = arquivoRepository.findById(id).orElse(null);
 
         if (t instanceof CnabProcessingException cnab) {
-            var obj = cnabErrorService.savCnabErro(CnabErro.builder()
+            cnabErrorService.saveCnabErro(CnabErro.builder()
                     .arquivo(arquivo)
                     .erro(cnab.getMessage())
                     .message(cnab.getMessage())
                     .lineNumber(cnab.getActualLine())
                     .linha(cnab.getLine())
                     .build());
-            if (nonNull(obj) && obj.getId() > 0) {
-                return true;
-            }
         }
 
         if (t.getCause() instanceof CnabProcessingException cnab) {
-            var obj = cnabErrorService.savCnabErro(CnabErro.builder()
+            cnabErrorService.saveCnabErro(CnabErro.builder()
                     .arquivo(arquivo)
                     .erro(cnab.getMessage())
                     .message(cnab.getMessage())
                     .lineNumber(cnab.getActualLine())
                     .linha(cnab.getLine())
                     .build());
-            if (nonNull(obj) && obj.getId() > 0) {
-                return true;
-            }
         } else {
             log.error("AN UNCOMMON ERROR HAS HAPPEN: {}", t.getMessage());
             log.error(t.getMessage(), t);

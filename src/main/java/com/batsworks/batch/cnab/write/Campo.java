@@ -1,10 +1,8 @@
 package com.batsworks.batch.cnab.write;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-@AllArgsConstructor
 public enum Campo {
 
     IDENTIFICACAO_DO_REGISTRO("Identificação_do_Registro", 1),
@@ -53,6 +51,11 @@ public enum Campo {
     SUFIXO_DO_CEP("Sufixo_do_CEP", 3),
     SEGUNDA_MENSAGEM("2ª_Mensagem", 60),
     NUMERO_SEQUENCIAL_DO_REGISTRO("Nº_Seqüencial_do_Registro", 6);
+
+    Campo(String name, int size){
+        this.name = name;
+        this.size = size;
+    }
 
     private final String name;
     private final int size;

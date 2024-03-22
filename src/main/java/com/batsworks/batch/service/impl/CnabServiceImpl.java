@@ -61,9 +61,6 @@ public class CnabServiceImpl implements CnabService {
         removeEntityPattern(alteracoes);
         var continua = converts.camposAntigos(objAtual, alteracoes);
 
-        log.info("{} \n", continua);
-        log.info("{} \n", alteracoes);
-
         var cnabEntityMapped = mapper.convertValue(cnab, CnabEntity.class);
         cnabEntityMapped.setId(cnabEntity.getId());
         cnabEntityMapped.setArquivo(cnabEntity.getArquivo());
@@ -86,9 +83,6 @@ public class CnabServiceImpl implements CnabService {
         removeEntityPattern(alteracoes);
         var continua = converts.camposAntigos(objAtual, alteracoes);
 
-        log.info("{} \n", continua);
-        log.info("{} \n", alteracoes);
-
         var cnabEntityMapped = mapper.convertValue(cnab, CnabEntity.class);
         cnabEntityMapped.setId(cnabEntity.getId());
         cnabEntityMapped.setArquivo(cnabEntity.getArquivo());
@@ -108,11 +102,8 @@ public class CnabServiceImpl implements CnabService {
         var objAtualizado = converts.convertToHashMap(cnab);
 
         var alteracoes = converts.alteracoes(objAtual, objAtualizado);
-        alteracoes = removeEntityPattern(alteracoes);
+        removeEntityPattern(alteracoes);
         var continua = converts.camposAntigos(objAtual, alteracoes);
-
-        log.info("{} \n", continua);
-        log.info("{} \n", alteracoes);
 
         var cnabEntityMapped = mapper.convertValue(cnab, CnabEntity.class);
         cnabEntityMapped.setId(cnabEntity.getId());
@@ -141,8 +132,6 @@ public class CnabServiceImpl implements CnabService {
         removeEntityPattern(alteracoes);
         var continua = converts.camposAntigos(objAtual, alteracoes);
 
-        log.info("{} \n", continua);
-        log.info("{} \n", alteracoes);
 
         var cnabEntityMapped = mapper.convertValue(cnab, CnabEntity.class);
         cnabEntityMapped.setId(cnabEntity.getId());
@@ -170,8 +159,6 @@ public class CnabServiceImpl implements CnabService {
         removeEntityPattern(alteracoes);
         var continua = converts.camposAntigos(objAtual, alteracoes);
 
-        log.info("{} \n", continua);
-        log.info("{} \n", alteracoes);
 
         var cnabEntityMapped = mapper.convertValue(cnab, CnabEntity.class);
         cnabEntityMapped.setId(cnabEntity.getId());
@@ -199,9 +186,6 @@ public class CnabServiceImpl implements CnabService {
         removeEntityPattern(alteracoes);
         var continua = converts.camposAntigos(objAtual, alteracoes);
 
-        log.info("{} \n", continua);
-        log.info("{} \n", alteracoes);
-
         var cnabEntityMapped = mapper.convertValue(cnab, CnabEntity.class);
         cnabEntityMapped.setId(cnabEntity.getId());
         cnabEntityMapped.setArquivo(cnabEntity.getArquivo());
@@ -217,10 +201,11 @@ public class CnabServiceImpl implements CnabService {
     }
 
 
-    private Map<String, Object> removeEntityPattern(Map<String, Object> alteracoes) {
+    private void removeEntityPattern(Map<String, Object> alteracoes) {
+        log.trace("ANTES: {}", alteracoes);
         var removeDefaultItens = List.of("id", "dataCadastro", "dataAtualizacao", "situacao", "arquivo", "observacao", "linha");
         removeDefaultItens.forEach(alteracoes::remove);
-        return alteracoes;
+        log.trace("DEPOIS: {}", alteracoes);
     }
 
 }

@@ -19,7 +19,6 @@ public class Converts {
         Class<?> clazz = obj.getClass();
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
-            field.setAccessible(true);
             String fieldName = field.getName();
             Object value = field.get(obj);
             map.put(fieldName, value);
@@ -33,9 +32,7 @@ public class Converts {
         for (Map.Entry<String, Object> entry : objAtual.entrySet()) {
             var newValue = objAtualizado.get(entry.getKey());
             if (nonNull(newValue) && nonNull(entry.getValue()) && !deepEquals(entry.getValue(), newValue)) {
-                if (!entry.getValue().equals(newValue)) {
-                    map.put(entry.getKey(), newValue);
-                }
+                map.put(entry.getKey(), newValue);
             }
         }
         return map;

@@ -10,7 +10,7 @@ public class CnabLineMapper<T> extends DefaultLineMapper<T> {
     @Override
     public T mapLine(String line, int lineNumber) throws Exception {
         try {
-            if (isHeader(line) || Boolean.FALSE.equals(line.length() == 400)) {
+            if (Boolean.TRUE.equals(isHeader(line)) || Boolean.FALSE.equals(line.length() == 400)) {
                 throw new CnabProcessingException("Titulo %s com %s caracteres".formatted(line.substring(70, 81), line.length()), lineNumber, line);
             }
             var mappedLine = super.mapLine(line, lineNumber);

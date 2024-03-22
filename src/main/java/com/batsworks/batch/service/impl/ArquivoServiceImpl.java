@@ -4,7 +4,7 @@ import com.batsworks.batch.config.exception.BussinesException;
 import com.batsworks.batch.config.exception.StatusEnum;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabStatus;
-import com.batsworks.batch.domain.enums.CnabType;
+import com.batsworks.batch.domain.enums.FileType;
 import com.batsworks.batch.domain.mapper.ArquivoMapper;
 import com.batsworks.batch.domain.records.ArquivoDTO;
 import com.batsworks.batch.domain.records.DefaultMessage;
@@ -47,25 +47,27 @@ public class ArquivoServiceImpl implements ArquivoService {
     private final CnabErroRepository cnabErroRepository;
 
     @Override
-    public DefaultMessage uploadCnabFile(MultipartFile file, CnabType tipo, String observcao) {
+    public DefaultMessage uploadCnabFile(MultipartFile file, FileType tipo, String observcao) {
         Arquivo arquivo = new Arquivo();
         try {
-            var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
-            arquivo = Arquivo.builder().nome(fileName)
-                    .extension(fileType(file.getInputStream(), fileName))
-                    .fileSize(file.getSize())
-                    .file(file.getBytes())
-                    .observacao(observcao)
-                    .situacao(CnabStatus.PROCESSANDO).build();
+            if (tipo.equals(FileType.CNAB400)) {
+                var fileName = StringUtils.cleanPath(nonNull(file.getOriginalFilename()) ? file.getOriginalFilename() : randomFileName());
+                arquivo = Arquivo.builder().nome(fileName)
+                        .extension(fileType(file.getInputStream(), fileName))
+                        .fileSize(file.getSize())
+                        .file(file.getBytes())
+                        .observacao(observcao)
+                        .situacao(CnabStatus.PROCESSANDO).build();
 
-            if (Boolean.FALSE.equals(validFile(file, fileName)))
-                throw new BussinesException(BAD_REQUEST, "Arquivo Invalido");
+                if (Boolean.FALSE.equals(validFile(file, fileName)))
+                    throw new BussinesException(BAD_REQUEST, "Arquivo Invalido");
 
-            var data = compressData(file.getBytes());
-            arquivo.setFile(data);
-            arquivo = arquivoRepository.save(arquivo);
+                var data = compressData(file.getBytes());
+                arquivo.setFile(data);
+                arquivo = arquivoRepository.save(arquivo);
 
-            rabbitTemplate.convertAndSend("arquivo.cnab", arquivo);
+                rabbitTemplate.convertAndSend("arquivo.cnab", arquivo);
+            }
             return new DefaultMessage("Analisando arquivo %s ".formatted(arquivo.getNome()), CnabStatus.PROCESSANDO);
         } catch (Exception e) {
             log.error(e.getMessage());

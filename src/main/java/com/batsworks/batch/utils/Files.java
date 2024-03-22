@@ -33,6 +33,15 @@ public class Files {
             return false;
         }
     }
+    public static Boolean validFile(MultipartFile file, String fileName, String extension) {
+        try {
+            var fileType = fileType(file.getInputStream(), fileName);
+            return fileType.equalsIgnoreCase(extension);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
+    }
 
     public static String randomFileName() {
         return UUID.randomUUID() + ".rem";
@@ -92,9 +101,7 @@ public class Files {
             while ((bytesRead = gzipIn.read(buffer)) != -1) {
                 baos.write(buffer, 0, bytesRead);
             }
-
             return baos.toByteArray();
-
         } catch (IOException e) {
             log.error(e.getMessage(), e);
         }

@@ -3,6 +3,7 @@ package com.batsworks.batch.config.amqp;
 import com.batsworks.batch.domain.entity.Arquivo;
 import com.batsworks.batch.domain.enums.CnabStatus;
 import com.batsworks.batch.service.ArquivoService;
+import com.batsworks.batch.utils.Files;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -28,8 +29,7 @@ public class CnabFilaRead {
     private final Job jobCnab;
 
     @RabbitListener(queues = "arquivo.cnab")
-    public void receveFile(Arquivo arquivoFila) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
-
+    public void receveFileCnab(Arquivo arquivoFila) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
         var arquivo = arquivoService.findArquivoByID(arquivoFila.getId());
         if (arquivo.situacao().equals(CnabStatus.PROCESSADO_SUCESSO)) {
             log.info("Arquivo {} já processado com sucesso nova tentativa realizada as {}", arquivo.nome(), actualDateString());
