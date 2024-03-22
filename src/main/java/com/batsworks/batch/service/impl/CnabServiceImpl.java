@@ -40,7 +40,7 @@ public class CnabServiceImpl implements CnabService {
     private static final String NOT_FOUND_BOLETO = "Não foi encontrado boleto para alteração";
 
     @Override
-    public void ocorrencia02(Cnab cnab)  throws CnabProcessingException, IllegalAccessException {
+    public void ocorrencia02(Cnab cnab)  throws CnabProcessingException {
         var cnabEntity = cnabRepository.findByCnabNumeroTituloLike(cnab.numeroDocumento());
         if (isNull(cnabEntity)) throw new CnabProcessingException(NOT_FOUND_BOLETO, cnab.linha());
 
@@ -175,7 +175,7 @@ public class CnabServiceImpl implements CnabService {
     }
 
     @Override
-    public void ocorrencia20(Cnab cnab)  throws CnabProcessingException, IllegalAccessException {
+    public void ocorrencia20(Cnab cnab) throws CnabProcessingException, IllegalAccessException {
         var cnabEntity = cnabRepository.findByCnabNumeroTituloLike(cnab.numeroDocumento());
         if (isNull(cnabEntity)) throw new CnabProcessingException(NOT_FOUND_BOLETO, cnab.linha());
 
