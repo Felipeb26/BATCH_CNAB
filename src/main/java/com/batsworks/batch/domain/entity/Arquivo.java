@@ -15,8 +15,7 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-@Entity
-@ToString
+@Entity(name = "Arquivo")
 @Table(name = "arquivo")
 @AllArgsConstructor
 @NoArgsConstructor

@@ -31,7 +31,8 @@ public class CnabErrorServiceImpl implements CnabErrorService {
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRES_NEW)
     public void saveCnabErro(CnabErro cnabErro) {
-        cnabErroRepository.findByNumeroLinhaAndIdArquivo(cnabErro.getLineNumber(), cnabErro.getArquivo().getId());
+        cnabErroRepository.save(cnabErro);
+//        cnabErroRepository.findByNumeroLinhaAndIdArquivo(cnabErro.getLineNumber(), cnabErro.getArquivo().getId());
     }
 
 }

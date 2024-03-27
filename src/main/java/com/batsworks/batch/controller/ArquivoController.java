@@ -8,9 +8,7 @@ import com.batsworks.batch.service.ArquivoService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -48,8 +46,8 @@ public class ArquivoController {
     }
 
     @GetMapping
-    public PageDTO findAllByPage(@PageableDefault(sort = {"dataCadastro"}, direction = Sort.Direction.DESC) Pageable pageable) {
-        return service.findAllByPage(pageable);
+    public PageDTO findAllByPage(@RequestParam int pageNumber, @RequestParam int size) {
+        return service.findAllByPage(PageRequest.of(pageNumber, size));
     }
 
     @GetMapping("/{id}")

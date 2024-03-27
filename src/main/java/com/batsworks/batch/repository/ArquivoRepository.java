@@ -7,7 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
-public interface ArquivoRepository extends CrudRepository<Arquivo, Long>, JpaRepository<Arquivo, Long> {
+public interface ArquivoRepository extends JpaRepository<Arquivo, Long> {
 
     @Query("SELECT a.file FROM Arquivo a WHERE id=?1 ")
     Optional<byte[]> findArquivoById(Long id);

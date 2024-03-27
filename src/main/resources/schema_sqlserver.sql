@@ -2,11 +2,11 @@
 IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'arquivo')
 BEGIN
     CREATE TABLE arquivo (
-        id INT IDENTITY(1,1) PRIMARY KEY,
+        id BIGINT IDENTITY(1,1) PRIMARY KEY,
         nome VARCHAR(255),
         extension VARCHAR(255),
         fileSize VARCHAR(255),
-        quantidade INT,
+        quantidade BIGINT,
         situacao VARCHAR(255),
         observacao VARCHAR(100),
         valorTotal DECIMAL,
@@ -20,12 +20,12 @@ END
 IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'cnab_erro')
 BEGIN
     CREATE TABLE cnab_erro (
-        id INT IDENTITY(1,1) PRIMARY KEY,
+        id BIGINT IDENTITY(1,1) PRIMARY KEY,
         message VARCHAR(255),
         linha VARCHAR(255),
-        lineNumber INT,
+        lineNumber BIGINT,
         erro VARCHAR(255),
-        idArquivo INT,
+        idArquivo BIGINT,
         dataCadastro DATETIME,
         dataAtualizacao DATETIME,
         FOREIGN KEY (idArquivo) REFERENCES arquivo(id)
@@ -36,7 +36,7 @@ END
 IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'cnab')
 BEGIN
     CREATE TABLE cnab (
-        id INT IDENTITY(1,1) PRIMARY KEY,
+        id BIGINT IDENTITY(1,1) PRIMARY KEY,
         identRegistro VARCHAR(255),
         agenciaDebito VARCHAR(255),
         digitoAgencia VARCHAR(255),
@@ -46,18 +46,18 @@ BEGIN
         identBeneficiario VARCHAR(255),
         controleParticipante VARCHAR(255),
         codigoBanco VARCHAR(255),
-        campoMulta INT,
+        campoMulta BIGINT,
         percentualMulta DECIMAL,
-        nossoNumero INT,
+        nossoNumero BIGINT,
         digitoConferenciaNumeroBanco VARCHAR(255),
-        descontoDia INT,
-        condicaoEmpissaoPapeladaCobranca INT,
+        descontoDia BIGINT,
+        condicaoEmpissaoPapeladaCobranca BIGINT,
         boletoDebitoAutomatico VARCHAR(255),
-        identificacaoOcorrencia INT,
+        identificacaoOcorrencia BIGINT,
         numeroDocumento VARCHAR(255),
         dataVencimento DATE,
         valorTitulo DECIMAL,
-        especieTitulo INT,
+        especieTitulo BIGINT,
         dataEmissao DATE,
         primeiraInstrucao VARCHAR(255),
         segundaInstrucao VARCHAR(255),
@@ -66,7 +66,7 @@ BEGIN
         valorDesconto DECIMAL,
         valorIOF DECIMAL,
         valorAbatimento VARCHAR(255),
-        tipoPagador INT,
+        tipoPagador BIGINT,
         nomePagador VARCHAR(255),
         endereco VARCHAR(255),
         primeiraMensagem VARCHAR(255),
@@ -74,8 +74,8 @@ BEGIN
         sufixoCEP VARCHAR(255),
         segundaMensagem VARCHAR(255),
         sequencialRegistro VARCHAR(255),
-        idArquivo INT,
-        linha INT,
+        idArquivo BIGINT,
+        linha BIGINT,
         situacao VARCHAR(100),
         dataCadastro DATETIME,
         dataAtualizacao DATETIME,
@@ -83,15 +83,15 @@ BEGIN
     );
 END
 
-IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHER TABLE_NAME = 'boleto_alteracao')
+IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'boleto_alteracao')
 BEGIN
     CREATE TABLE boleto_alteracao(
-       id INT IDENTITY(1,1) PRIMARY KEY,
+       id BIGINT IDENTITY(1,1) PRIMARY KEY,
        camposALterados VARCHAR(255),
        camposAntigos VARCHAR(255),
        tipoDeAlteracao VARCHAR(255),
-       boletoAlterado INT,
-       idArquivo INT,
+       boletoAlterado BIGINT,
+       idArquivo BIGINT,
        dataCadastro DATETIME,
        dataAtualizacao DATETIME,
        FOREIGN KEY (boletoAlterado) REFERENCES cnab(id),

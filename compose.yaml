@@ -1,31 +1,48 @@
 version: "3.8"
 services:
-  mysql:
-    image: mysql/mysql-server
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2019-latest
     ports:
-      - "3306:3306"
+      - "1433:1433"
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      SA_PASSWORD: root@123
+      ACCEPT_EULA: Y
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
   rabbit:
     image: rabbitmq:3.12-management
     ports:
       - "15672:15672"
       - "5672:5672"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
   zipkin:
     image: openzipkin/zipkin
     ports:
       - "9411:9411"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
   batch:
     depends_on:
-      - mysql
-      - zipkin
+      - sqlserver
       - rabbit
+      - zipkin
     build:
       dockerfile: dockerfile
     image: batch-cnab
     restart: always
     ports:
       - "8080:8080"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
     environment:
       DB_PASS: secret
       DB_USER: root

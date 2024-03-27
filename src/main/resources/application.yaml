@@ -41,7 +41,7 @@ spring:
     job.enabled: false
   datasource:
     hikari.connection-timeout: 5000
-    url: jdbc:sqlserver://;serverName=localhost;databaseName=CNAB_CODES;trustServerCertificate=true;
+    url: jdbc:sqlserver://;serverName=192.168.1.206;databaseName=CNAB_CODES;trustServerCertificate=true;
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
     username: sa
     password: root@123

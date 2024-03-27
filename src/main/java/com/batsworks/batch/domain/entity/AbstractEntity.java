@@ -34,7 +34,6 @@ public abstract class AbstractEntity<T> implements Serializable {
     @Getter(AccessLevel.PUBLIC)
     @Setter(AccessLevel.PUBLIC)
     private LocalDateTime dataAtualizacao;
-    protected transient String className;
 
     @PrePersist
     private void persistDate() {
@@ -46,8 +45,4 @@ public abstract class AbstractEntity<T> implements Serializable {
         this.dataAtualizacao = LocalDateTime.now(Zones.AMERIACA_SAO_PAULO.getZone());
     }
 
-    @PrePersist
-    private void savedClass(T t) {
-        this.className = t.getClass().getSimpleName();
-    }
 }
