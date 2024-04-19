@@ -5,6 +5,8 @@ import com.batsworks.batch.cnab.read.CnabProcessor;
 import com.batsworks.batch.cnab.read.CnabSkipListenner;
 import com.batsworks.batch.cnab.read.CnabSkipPolicy;
 import com.batsworks.batch.domain.entity.BatchParameters;
+import com.batsworks.batch.repository.ArquivoRepository;
+import com.batsworks.batch.service.CnabErrorService;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.step.skip.SkipPolicy;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +22,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class CustomBeansDefinition {
 
     @Bean
-    SkipPolicy skipPolicy() {
-        return new CnabSkipPolicy();
+    SkipPolicy skipPolicy(CnabErrorService cnabErrorService, ArquivoRepository arquivoRepository, BatchParameters batchParameters) {
+        return new CnabSkipPolicy(cnabErrorService, arquivoRepository, batchParameters);
     }
 
     @Bean

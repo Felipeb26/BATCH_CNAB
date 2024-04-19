@@ -6,6 +6,7 @@ import com.batsworks.batch.domain.entity.BatchParameters;
 import com.batsworks.batch.domain.entity.CnabErro;
 import com.batsworks.batch.repository.ArquivoRepository;
 import com.batsworks.batch.service.CnabErrorService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.step.skip.SkipLimitExceededException;
 import org.springframework.batch.core.step.skip.SkipPolicy;
@@ -19,14 +20,12 @@ import java.io.IOException;
  * que a aplicação usa multithread para paralelismo asyncrono
  */
 @Slf4j
+@RequiredArgsConstructor
 public class CnabSkipPolicy implements SkipPolicy {
 
-    @Autowired
-    private CnabErrorService cnabErrorService;
-    @Autowired
-    private ArquivoRepository arquivoRepository;
-    @Autowired
-    private BatchParameters batchParameters;
+    private final CnabErrorService cnabErrorService;
+    private final ArquivoRepository arquivoRepository;
+    private final BatchParameters batchParameters;
 
     @Override
     public boolean shouldSkip(Throwable t, long skipCount) throws SkipLimitExceededException {
@@ -35,6 +34,7 @@ public class CnabSkipPolicy implements SkipPolicy {
 
         if (t instanceof FlatFileParseException parseException && (startWith(parseException.getInput()))) {
             log.info("AN EXCEPION {}",parseException.getMessage());
+            return true;
         }
 
         if (t.getCause() instanceof IOException) {

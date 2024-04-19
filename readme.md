@@ -61,3 +61,9 @@ docker run -p 8500:8500/udp --name=consul consul:v0.6.4 agent -server -bootstrap
 ```
 
 <br>
+
+## Caso queira iniciar o projeto sem utiliza-lo como imagem utilize
+
+```sh
+  ./compose_solo_imgs.sh
+```
